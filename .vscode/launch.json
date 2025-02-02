@@ -1,0 +1,70 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Streamlit: explore_data_streamlit.py",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "streamlit",
+            "args": [
+                "run",
+                "explore_data_streamlit.py"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "TUEV LSTM",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "run_multiclass_supervised.py",
+            "args": [
+                "--dataset", "TUEV",
+                "--in_channels", "16",
+                "--n_classes", "6",
+                "--sampling_rate", "200",
+                "--token_size", "200",
+                "--hop_length", "100",
+                "--sample_length", "5",
+                "--batch_size", "128",
+                "--model", "LSTM"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "python": "python3"
+        },
+        {
+            "name": "TUEV BIOT XLSTM",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "run_multiclass_supervised.py",
+            "args": [
+                "--dataset", "TUEV",
+                "--in_channels", "16",
+                "--n_classes", "6",
+                "--sampling_rate", "200",
+                "--token_size", "200",
+                "--hop_length", "100",
+                "--mlstm", "True",
+                "--slstm", "True",
+                "--sample_length", "5",
+                "--batch_size", "128",
+                "--dataset_size", "1.0",
+                "--model", "BIOT"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "python": "python3"
+        }
+
+    ]
+}

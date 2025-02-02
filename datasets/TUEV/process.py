@@ -135,6 +135,7 @@ def load_up_objects(BaseDir, Features, OffendingChannels, Labels, OutDir):
                 for idx, (signal, offending_channel, label) in enumerate(
                     zip(signals, offending_channels, labels)
                 ):
+                    #if label < 5:
                     sample = {
                         "signal": signal,
                         "offending_channel": offending_channel,
@@ -159,7 +160,7 @@ def save_pickle(object, filename):
 TUEV dataset is downloaded from https://isip.piconepress.com/projects/tuh_eeg/html/downloads.shtml
 """
 
-root = "/srv/local/data/TUH/tuh_eeg_events/v2.0.0/edf"
+root = "datasets/TUEV/edf"
 train_out_dir = os.path.join(root, "processed_train")
 eval_out_dir = os.path.join(root, "processed_eval")
 if not os.path.exists(train_out_dir):

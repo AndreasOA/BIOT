@@ -1,12 +1,21 @@
 import time
 import math
-
+import ninja
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from linear_attention_transformer import LinearAttentionTransformer
-
+from xlstm import (
+    xLSTMBlockStack,
+    xLSTMBlockStackConfig,
+    mLSTMBlockConfig,
+    mLSTMLayerConfig,
+    sLSTMBlockConfig,
+    sLSTMLayerConfig,
+    FeedForwardConfig,
+)
+import snntorch as snn
 
 class PatchFrequencyEmbedding(nn.Module):
     def __init__(self, emb_size=256, n_freq=101):
@@ -72,12 +81,16 @@ class BIOTEncoder(nn.Module):
         n_channels=16,
         n_fft=200,
         hop_length=100,
+        mlstm = True,
+        slstm = True,
         **kwargs
     ):
         super().__init__()
 
         self.n_fft = n_fft
         self.hop_length = hop_length
+        self.mlstm = mlstm
+        self.slstm = slstm
 
         self.patch_embedding = PatchFrequencyEmbedding(
             emb_size=emb_size, n_freq=self.n_fft // 2 + 1
@@ -90,6 +103,48 @@ class BIOTEncoder(nn.Module):
             attn_layer_dropout=0.2,  # dropout right after self-attention layer
             attn_dropout=0.2,  # dropout post-attention
         )
+
+        m_cfg = xLSTMBlockStackConfig(
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    num_heads=heads,
+                    dropout=0.2,
+                )
+            ),
+            embedding_dim=emb_size,
+            context_length=1024,
+            num_blocks=depth
+        )
+
+        self.x_m_lstm_stack = xLSTMBlockStack(m_cfg)
+
+        s_cfg = xLSTMBlockStackConfig(
+            slstm_block=sLSTMBlockConfig(
+                slstm=sLSTMLayerConfig(
+                    backend="cuda",
+                    embedding_dim=emb_size,
+                ),
+                feedforward=FeedForwardConfig(
+                    proj_factor=1.3,
+                    act_fn="gelu",
+                    embedding_dim=emb_size,
+                    dropout=0.0,
+                    bias=False,
+                    ff_type="ffn_gated"
+                ),
+            ),
+            embedding_dim=emb_size,
+            context_length=256,
+            num_blocks=1
+        )
+
+        try:
+            self.x_s_lstm_stack = xLSTMBlockStack(s_cfg)
+        except RuntimeError as e:
+            print("Warning: Failed to initialize CUDA sLSTM, falling back to CPU")
+            s_cfg.slstm_block.slstm.backend = "vanilla"
+            self.x_s_lstm_stack = xLSTMBlockStack(s_cfg)
+
         self.positional_encoding = PositionalEncoding(emb_size)
 
         # channel token, N_channels >= your actual channels
@@ -140,8 +195,12 @@ class BIOTEncoder(nn.Module):
         # (batch_size, 16 * ts, emb)
         emb = torch.cat(emb_seq, dim=1)
         # (batch_size, emb)
-        emb = self.transformer(emb).mean(dim=1)
-        return emb
+        if self.mlstm:
+            emb = self.x_m_lstm_stack(emb)
+        if self.slstm:
+            emb = self.x_s_lstm_stack(emb)
+        emb = emb.cuda()
+        return emb.mean(dim=1)
 
 
 # supervised classifier module

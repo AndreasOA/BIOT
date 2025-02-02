@@ -87,7 +87,7 @@ class TUEVLoader(torch.utils.data.Dataset):
     def __init__(self, root, files, sampling_rate=200):
         self.root = root
         self.files = files
-        self.default_rate = 256
+        self.default_rate = 250
         self.sampling_rate = sampling_rate
 
     def __len__(self):
