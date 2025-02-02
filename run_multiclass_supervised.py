@@ -48,8 +48,9 @@ class LitModel_finetune(pl.LightningModule):
         X, y = batch
         prod = self.model(X)
         train_loss = nn.CrossEntropyLoss()(prod, y)
-        # Log training metrics
+        # Log with both formats
         self.log("train/loss", train_loss, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("train_loss", train_loss, on_step=False, on_epoch=True)
         self.log("train/learning_rate", self.optimizers().param_groups[0]['lr'], on_step=True)
         return train_loss
 
@@ -57,9 +58,10 @@ class LitModel_finetune(pl.LightningModule):
         X, y = batch
         with torch.no_grad():
             convScore = self.model(X)
-            # Calculate and log validation loss
             val_loss = nn.CrossEntropyLoss()(convScore, y)
+            # Log with both formats
             self.log("val/loss", val_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+            self.log("val_loss", val_loss, on_step=False, on_epoch=True, sync_dist=True)
             
             # Get predicted classes
             pred_classes = torch.argmax(convScore, dim=1)
@@ -251,13 +253,15 @@ def supervised(args):
     lightning_model = LitModel_finetune(args, model)
 
     # Replace logger setup with Wandb
-    run_name = f"{args.dataset}-{args.model}-{args.lr}-{args.batch_size}-{args.sampling_rate}-{args.token_size}-{args.hop_length}"
+    run_name = f"{args.dataset}-{args.model}"
     
     wandb_logger = WandbLogger(
         name=run_name,
         log_model=True,
         save_dir="./",
     )
+
+    run_name = f"{wandb.run.name}-{run_name}"
     
     # Enhanced model logging
     wandb_logger.watch(
