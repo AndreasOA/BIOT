@@ -57,14 +57,22 @@
                 "--mlstm", "True",
                 "--slstm", "True",
                 "--sample_length", "5",
-                "--batch_size", "128",
+                "--batch_size", "256",
                 "--dataset_size", "1.0",
                 "--model", "BIOT"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
             "python": "python3"
+        },
+        {
+            "name": "TUEV BIOT Sweep",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "run_sweep.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "python": "python3"
         }
-
     ]
 }
