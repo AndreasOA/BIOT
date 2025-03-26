@@ -1,5 +1,5 @@
 {
-    "name": "PyTorch Development Environment",
+    "name": "XLSTM BIOT Environment",
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."
@@ -14,10 +14,13 @@
                 "ms-python.python",
                 "ms-python.vscode-pylance",
                 "ms-toolsai.jupyter"
-            ]
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/home/vscode/miniconda/envs/xlstm_biot/bin/python"
+            }
         }
     },
     "forwardPorts": [],
-    "postCreateCommand": "pip install -r requirements.txt",
-    "remoteUser": "vscode"
+    "remoteUser": "vscode",
+    "postCreateCommand": "echo 'Environment ready!'"
 }

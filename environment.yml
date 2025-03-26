@@ -1,0 +1,40 @@
+name: xlstm_biot
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - cuda=12.6
+  - cuda-nvcc=12.6
+  - gxx_linux-64=13.2.0
+  - python=3.11
+  - pip
+  - cmake
+  - ninja
+  - cuda-toolkit=12.6
+  - cuda-cccl=12.6
+  - pip:
+      - --index-url https://download.pytorch.org/whl/cu126
+      - --extra-index-url https://pypi.org/simple
+      - pre-commit
+      - ipykernel
+      - dacite
+      - omegaconf
+      - torchmetrics
+      - tqdm
+      - pytest
+      - pytest-xdist
+      - torch
+      - torchvision
+      - torchaudio
+      - numpy==1.26.4
+      - linear_attention_transformer
+      - einops
+      - pytorch_lightning
+      - pyhealth
+      - tensorboardX
+      - tensorboard
+      - xlstm
+      - wandb
+      - thop

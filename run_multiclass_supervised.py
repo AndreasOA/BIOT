@@ -49,9 +49,9 @@ class LitModel_finetune(pl.LightningModule):
         prod = self.model(X)
         train_loss = nn.CrossEntropyLoss()(prod, y)
         # Log with both formats
-        self.log("train/loss", train_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("train_loss", train_loss, on_step=False, on_epoch=True)
-        self.log("train/learning_rate", self.optimizers().param_groups[0]['lr'], on_step=True)
+        self.log("train/loss", train_loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log("train_loss", train_loss, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("train/learning_rate", self.optimizers().param_groups[0]['lr'], on_step=True, sync_dist=True)
         return train_loss
 
     def validation_step(self, batch, batch_idx):
@@ -162,32 +162,50 @@ class LitModel_finetune(pl.LightningModule):
         return [optimizer]  # , [scheduler]
 
 
-def prepare_TUEV_dataloader(args):
-    # set random seed
-    seed = 4523
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-
-    root = f"datasets/{args.dataset}/edf"
-
-    train_files = os.listdir(os.path.join(root, "processed_train"))
-    train_sub = list(set([f.split("_")[0] for f in train_files]))
-    print("train sub", len(train_sub))
-    test_files = os.listdir(os.path.join(root, "processed_eval"))
-
-    # Apply dataset size reduction if specified
-    if args.dataset_size < 1.0:
-        n_train = int(len(train_sub) * args.dataset_size)
-        train_sub = np.random.choice(train_sub, size=n_train, replace=False)
-        print(f"Reduced training set to {args.dataset_size*100}% ({n_train} subjects)")
-
-    val_sub = np.random.choice(train_sub, size=int(
-        len(train_sub) * 0.1), replace=False)
+def get_train_val_split(train_files, train_sub, val_ratio=0.3, seed=42):
+    """Generate consistent train/validation splits.
+    
+    Args:
+        train_files: List of all training files
+        train_sub: List of all training subjects
+        val_ratio: Ratio of validation set size (default: 0.1)
+        seed: Random seed for reproducibility (default: 42)
+    
+    Returns:
+        val_files: List of validation files
+        train_files: List of training files
+    """
+    rng = np.random.RandomState(seed)
+    val_sub = rng.choice(train_sub, size=int(len(train_sub) * val_ratio), replace=False)
     train_sub = list(set(train_sub) - set(val_sub))
     val_files = [f for f in train_files if f.split("_")[0] in val_sub]
     train_files = [f for f in train_files if f.split("_")[0] in train_sub]
+    return val_files, train_files
+
+def prepare_TUEV_dataloader(args):
+    # Use a consistent seed across all random operations
+    global_seed = 42  # Using same seed as train/val split
+    torch.manual_seed(global_seed)
+    torch.cuda.manual_seed(global_seed)
+    torch.cuda.manual_seed_all(global_seed)
+    np.random.seed(global_seed)
+
+    root = f"datasets/{args.dataset}/edf"
+
+    train_files = sorted(os.listdir(os.path.join(root, "processed_train")))  # Sort for consistency
+    train_sub = sorted(list(set([f.split("_")[0] for f in train_files])))  # Sort subjects
+    print("train sub", len(train_sub))
+    test_files = sorted(os.listdir(os.path.join(root, "processed_eval")))  # Sort for consistency
+
+    # Apply dataset size reduction if specified
+    if args.dataset_size < 1.0:
+        rng = np.random.RandomState(global_seed)  # Use consistent seed
+        n_train = int(len(train_sub) * args.dataset_size)
+        train_sub = sorted(rng.choice(train_sub, size=n_train, replace=False))  # Sort after selection
+        print(f"Reduced training set to {args.dataset_size*100}% ({n_train} subjects)")
+
+    # Get consistent train/val split using same seed
+    val_files, train_files = get_train_val_split(train_files, train_sub, val_ratio=args.val_ratio, seed=global_seed)
 
     # prepare training and test data loader
     train_loader = torch.utils.data.DataLoader(
@@ -201,6 +219,14 @@ def prepare_TUEV_dataloader(args):
         num_workers=args.num_workers,
         persistent_workers=True,
     )
+
+    batch_size_printed = False
+
+    for batch in train_loader:
+        if not batch_size_printed:
+            print(f"Training batch size: {batch[0].shape}")
+            batch_size_printed = True
+
     test_loader = torch.utils.data.DataLoader(
         TUEVLoader(
             os.path.join(
@@ -225,6 +251,48 @@ def prepare_TUEV_dataloader(args):
     print(len(train_loader), len(val_loader), len(test_loader))
     return train_loader, test_loader, val_loader
 
+
+class TestEpochEnd(pl.Callback):
+    def __init__(self, test_dataloader):
+        super().__init__()
+        self.test_dataloader = test_dataloader
+
+    def on_train_epoch_end(self, trainer, pl_module):
+        # Switch to eval mode
+        pl_module.eval()
+        
+        # Run test evaluation
+        test_outputs = []
+        device = pl_module.device
+        
+        with torch.no_grad():
+            for batch in self.test_dataloader:
+                X, y = batch
+                X, y = X.to(device), y.to(device)
+                convScore = pl_module.model(X)
+                test_outputs.append((convScore.cpu().numpy(), y.cpu().numpy()))
+        
+        # Calculate metrics
+        result = []
+        gt = np.array([])
+        for out in test_outputs:
+            result.append(out[0])
+            gt = np.append(gt, out[1])
+        
+        result = np.concatenate(result, axis=0)
+        metrics = multiclass_metrics_fn(
+            gt, result,
+            metrics=["accuracy", "balanced_accuracy", "cohen_kappa", "f1_weighted"]
+        )
+        
+        # Log metrics
+        pl_module.log("test/epoch_acc", metrics["accuracy"], sync_dist=True)
+        pl_module.log("test/epoch_balanced_acc", metrics["balanced_accuracy"], sync_dist=True)
+        pl_module.log("test/epoch_cohen", metrics["cohen_kappa"], sync_dist=True)
+        pl_module.log("test/epoch_f1", metrics["f1_weighted"], sync_dist=True)
+        
+        # Switch back to training mode
+        pl_module.train()
 
 def supervised(args):
     # get data loaders
@@ -257,7 +325,7 @@ def supervised(args):
     
     wandb_logger = WandbLogger(
         name=run_name,
-        log_model=True,
+        log_model=False,
         save_dir="./",
     )
 
@@ -298,6 +366,9 @@ def supervised(args):
         mode="min"
     )
 
+    # Create test callback
+    test_callback = TestEpochEnd(test_loader)
+
     trainer = pl.Trainer(
         devices=[0],
         accelerator="gpu",
@@ -306,7 +377,7 @@ def supervised(args):
         enable_checkpointing=True,
         logger=wandb_logger,
         max_epochs=args.epochs,
-        callbacks=[early_stop_callback, checkpoint_callback],
+        callbacks=[early_stop_callback, checkpoint_callback, test_callback],  # Add test_callback
     )
 
     # train the model
@@ -314,12 +385,24 @@ def supervised(args):
         lightning_model, train_dataloaders=train_loader, val_dataloaders=val_loader
     )
 
-    # test the model
-    pretrain_result = trainer.test(
-        model=lightning_model, ckpt_path="best", dataloaders=test_loader
-    )[0]
-    print(pretrain_result)
+    try:
+        # Final test evaluation
+        pretrain_result = trainer.test(
+            model=lightning_model, ckpt_path="best", dataloaders=test_loader
+        )[0]
+        print(pretrain_result)
+    except Exception as e:
+        print(f"Error during test evaluation: {e}")
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -343,10 +426,13 @@ if __name__ == "__main__":
         "--sample_length", type=float, default=10, help="length (s) of sample"
     )
     parser.add_argument(
-        "--mlstm", type=bool, default=True, help="use mlstm"
+        "--val_ratio", type=float, default=0.3, help="validation ratio"
     )
     parser.add_argument(
-        "--slstm", type=bool, default=True, help="use slstm"
+        "--mlstm", type=str2bool, default=True, help="use mlstm"
+    )
+    parser.add_argument(
+        "--slstm", type=str2bool, default=True, help="use slstm"
     )
     parser.add_argument(
         "--n_classes", type=int, default=1, help="number of output classes"
@@ -378,6 +464,7 @@ if __name__ == "__main__":
             "batch_size": args.batch_size,
             "num_workers": args.num_workers,
             "dataset": args.dataset,
+            "val_ratio": args.val_ratio,
             "model": args.model,
             "in_channels": args.in_channels,
             "sample_length": args.sample_length,

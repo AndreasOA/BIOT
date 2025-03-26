@@ -15,7 +15,6 @@ from xlstm import (
     sLSTMLayerConfig,
     FeedForwardConfig,
 )
-import snntorch as snn
 
 class PatchFrequencyEmbedding(nn.Module):
     def __init__(self, emb_size=256, n_freq=101):
@@ -138,12 +137,12 @@ class BIOTEncoder(nn.Module):
             num_blocks=1
         )
 
-        try:
-            self.x_s_lstm_stack = xLSTMBlockStack(s_cfg)
-        except RuntimeError as e:
-            print("Warning: Failed to initialize CUDA sLSTM, falling back to CPU")
-            s_cfg.slstm_block.slstm.backend = "vanilla"
-            self.x_s_lstm_stack = xLSTMBlockStack(s_cfg)
+        # try:
+        self.x_s_lstm_stack = xLSTMBlockStack(s_cfg)
+        # except RuntimeError as e:
+        #     print("Warning: Failed to initialize CUDA sLSTM, falling back to CPU")
+        #     s_cfg.slstm_block.slstm.backend = "vanilla"
+        #     self.x_s_lstm_stack = xLSTMBlockStack(s_cfg)
 
         self.positional_encoding = PositionalEncoding(emb_size)
 
@@ -199,15 +198,15 @@ class BIOTEncoder(nn.Module):
             emb = self.x_m_lstm_stack(emb)
         if self.slstm:
             emb = self.x_s_lstm_stack(emb)
-        emb = emb.cuda()
+        #emb = emb.cuda()
         return emb.mean(dim=1)
 
 
 # supervised classifier module
 class BIOTClassifier(nn.Module):
-    def __init__(self, emb_size=256, heads=8, depth=4, n_classes=6, **kwargs):
+    def __init__(self, emb_size=256, heads=8, depth=4, n_classes=6, mlstm=True, slstm=True, **kwargs):
         super().__init__()
-        self.biot = BIOTEncoder(emb_size=emb_size, heads=heads, depth=depth, **kwargs)
+        self.biot = BIOTEncoder(emb_size=emb_size, heads=heads, depth=depth, mlstm=mlstm, slstm=slstm, **kwargs)
         self.classifier = ClassificationHead(emb_size, n_classes)
 
     def forward(self, x):
@@ -236,9 +235,9 @@ class UnsupervisedPretrain(nn.Module):
 
 # supervised pre-train module
 class SupervisedPretrain(nn.Module):
-    def __init__(self, emb_size=256, heads=8, depth=4, **kwargs):
+    def __init__(self, emb_size=256, heads=8, depth=4, mlstm=True, slstm=True, **kwargs):
         super().__init__()
-        self.biot = BIOTEncoder(emb_size=emb_size, heads=heads, depth=depth)
+        self.biot = BIOTEncoder(emb_size=emb_size, heads=heads, depth=depth, mlstm=mlstm, slstm=slstm)
         self.classifier_chb_mit = ClassificationHead(emb_size, 1)
         self.classifier_iiic_seizure = ClassificationHead(emb_size, 6)
         self.classifier_tuab = ClassificationHead(emb_size, 1)

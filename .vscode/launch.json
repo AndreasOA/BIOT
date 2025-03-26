@@ -56,7 +56,7 @@
                 "--hop_length", "100",
                 "--mlstm", "True",
                 "--slstm", "True",
-                "--sample_length", "5",
+                "--sample_length", "10",
                 "--batch_size", "256",
                 "--dataset_size", "1.0",
                 "--model", "BIOT"
