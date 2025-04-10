@@ -13,20 +13,21 @@ def generate_parameter_combinations() -> List[Dict]:
         'batch_size': [128],
         'num_workers': [16],
         'sampling_rate': [200],
-        'token_size': [120, 200, 400],
-        'hop_length': [40],
+        'token_size': [200],
+        'hop_length': [100],
         'dataset': ['TUEV'],
         'model': ['BIOT'],
         'in_channels': [16],
         'n_classes': [6],
         'epochs': [50],
         'sample_length': [10],
-        'mlstm': [False],
-        'slstm': [False],
+        'mlstm': [False, True],
+        'slstm': [False, True],
         'dataset_size': [1.0],
         'val_ratio': [0.3],
+        'use_full_sample': [False]
     }
-    
+    #         'full_sample_method': ['attention', 'convolution'],
     # Get all keys and values
     keys = param_grid.keys()
     values = param_grid.values()

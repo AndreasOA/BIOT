@@ -311,6 +311,8 @@ def supervised(args):
             hop_length=args.hop_length,
             mlstm=args.mlstm,
             slstm=args.slstm,
+            use_full_sample=args.use_full_sample,
+            full_sample_method=args.full_sample_method,
         )
         if args.pretrain_model_path and (args.sampling_rate == 200):
             model.biot.load_state_dict(torch.load(args.pretrain_model_path))
@@ -385,14 +387,14 @@ def supervised(args):
         lightning_model, train_dataloaders=train_loader, val_dataloaders=val_loader
     )
 
-    try:
-        # Final test evaluation
-        pretrain_result = trainer.test(
-            model=lightning_model, ckpt_path="best", dataloaders=test_loader
-        )[0]
-        print(pretrain_result)
-    except Exception as e:
-        print(f"Error during test evaluation: {e}")
+    # try:
+    #     # Final test evaluation
+    #     pretrain_result = trainer.test(
+    #         model=lightning_model, ckpt_path="best", dataloaders=test_loader
+    #     )[0]
+    #     print(pretrain_result)
+    # except Exception as e:
+    #     print(f"Error during test evaluation: {e}")
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -452,6 +454,15 @@ if __name__ == "__main__":
         "--dataset_size", type=float, default=1.0, 
         help="Fraction of dataset to use (0.0-1.0)"
     )
+    parser.add_argument(
+        "--use_full_sample", type=str2bool, default=False, 
+        help="Process the full sample at once"
+    )
+    parser.add_argument(
+        "--full_sample_method", type=str, default="attention", 
+        choices=["attention", "convolution"],
+        help="Method to process full sample: 'attention' or 'convolution'"
+    )
     args = parser.parse_args()
     print(args)
 
@@ -477,6 +488,8 @@ if __name__ == "__main__":
             "pretrain_model_path": args.pretrain_model_path,
             "epochs": args.epochs,
             "dataset_size": args.dataset_size,
+            "use_full_sample": args.use_full_sample,
+            "full_sample_method": args.full_sample_method,
         },
         settings=wandb.Settings(start_method="fork")
     )
