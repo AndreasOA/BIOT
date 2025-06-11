@@ -8,35 +8,43 @@ import time  # Add at the top of the file with other imports
 def generate_parameter_combinations() -> List[Dict]:
     # Define parameter grid based on sweep_config.yaml
     param_grid = {
-        'lr': [0.0000005],
+        'lr': [0.001],
         'weight_decay': [1e-5],
         'batch_size': [128],
         'num_workers': [16],
-        'sampling_rate': [200],
+        'sampling_rate': [250],
+        'resampling_rate': [200],
         'token_size': [200],
         'hop_length': [100],
         'dataset': ['TUEV'],
         'model': ['BIOT'],
         'in_channels': [16],
         'n_classes': [6],
-        'epochs': [50],
-        'sample_length': [10],
-        'mlstm': [False, True],
-        'slstm': [False, True],
+        'epochs': [100],
+        'mlstm': [False],
+        'slstm': [True, False],
         'dataset_size': [1.0],
-        'val_ratio': [0.3],
-        'use_full_sample': [False]
+        'val_ratio': [0.1],
+        'secondsBeforeEvent': [2, 3],
+        'secondsAfterEvent': [2, 3]
     }
     #         'full_sample_method': ['attention', 'convolution'],
     # Get all keys and values
-    keys = param_grid.keys()
-    values = param_grid.values()
+    keys = list(param_grid.keys())
+    values = list(param_grid.values())
     
     # Generate all combinations
     combinations = []
     for combination in itertools.product(*values):
-        combinations.append(dict(zip(keys, combination)))
+        param_dict = dict(zip(keys, combination))
+        # Only keep combinations where secondsBeforeEvent equals secondsAfterEvent
+        if param_dict['secondsBeforeEvent'] == param_dict['secondsAfterEvent']:
+            combinations.append(param_dict)
     
+
+    # Print the number of combinations
+    print(f"Total number of combinations: {len(combinations)}")
+    print(f"Combinations: {combinations}")
     return combinations
 
 def run_experiment(params: Dict, max_retries: int = 3, retry_delay: int = 30):

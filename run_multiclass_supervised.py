@@ -1,7 +1,7 @@
 import os
 import argparse
 import pickle
-
+import shutil
 import torch
 from tqdm import tqdm
 import numpy as np
@@ -22,7 +22,9 @@ from model import (
     LSTM
 )
 from utils import TUEVLoader, HARLoader
+from datasets.TUEV.process import load_up_objects
 
+from sklearn.metrics import roc_auc_score, average_precision_score
 
 class LitModel_finetune(pl.LightningModule):
     def __init__(self, args, model):
@@ -48,10 +50,10 @@ class LitModel_finetune(pl.LightningModule):
         X, y = batch
         prod = self.model(X)
         train_loss = nn.CrossEntropyLoss()(prod, y)
-        # Log with both formats
-        self.log("train/loss", train_loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        # Log only per epoch
+        self.log("train/loss", train_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.log("train_loss", train_loss, on_step=False, on_epoch=True, sync_dist=True)
-        self.log("train/learning_rate", self.optimizers().param_groups[0]['lr'], on_step=True, sync_dist=True)
+        self.log("train/learning_rate", self.optimizers().param_groups[0]['lr'], on_step=False, on_epoch=True, sync_dist=True)
         return train_loss
 
     def validation_step(self, batch, batch_idx):
@@ -132,25 +134,68 @@ class LitModel_finetune(pl.LightningModule):
             gt = np.append(gt, out[1])
 
         result = np.concatenate(result, axis=0)
-        
-        result = multiclass_metrics_fn(
+
+        # Compute metrics
+        metrics = multiclass_metrics_fn(
             gt, result, 
             metrics=["accuracy", "balanced_accuracy", "cohen_kappa", "f1_weighted"]
         )
-        
+
         # Handle potential NaN values
         for metric_name in ["accuracy", "balanced_accuracy", "cohen_kappa", "f1_weighted"]:
-            if np.isnan(result[metric_name]):
+            if np.isnan(metrics[metric_name]):
                 print(f"Warning: {metric_name} is NaN")
-                result[metric_name] = 0.0
-        
-        self.log("test_acc", result["accuracy"], sync_dist=True)
-        self.log("test_balanced_acc", result["balanced_accuracy"], sync_dist=True)
-        self.log("test_cohen", result["cohen_kappa"], sync_dist=True)
-        self.log("test_f1", result["f1_weighted"], sync_dist=True)
-        
+                metrics[metric_name] = 0.0
+
+        # Compute probabilities for AUROC/AUC-PR
+        try:
+            probs = torch.softmax(torch.tensor(result), dim=1).numpy()
+        except Exception as e:
+            print(f"Error in softmax conversion: {e}")
+            probs = result  # fallback, may error below
+
+        try:
+            auroc_macro_ovr = roc_auc_score(gt, probs, average="macro", multi_class="ovr")
+        except Exception as e:
+            print(f"Error in roc_auc_score macro ovr: {e}")
+            auroc_macro_ovr = 0.0
+        self.log("test_auroc_macro_ovr", auroc_macro_ovr, sync_dist=True)
+        try:
+            auroc_weighted_ovr = roc_auc_score(gt, probs, average="weighted", multi_class="ovr")
+        except Exception as e:
+            print(f"Error in roc_auc_score weighted ovr: {e}")
+            auroc_weighted_ovr = 0.0
+        self.log("test_auroc_weighted_ovr", auroc_weighted_ovr, sync_dist=True)
+        try:
+            auroc_macro_ovo = roc_auc_score(gt, probs, average="macro", multi_class="ovo")
+        except Exception as e:
+            print(f"Error in roc_auc_score macro ovo: {e}")
+            auroc_macro_ovo = 0.0
+        self.log("test_auroc_macro_ovo", auroc_macro_ovo, sync_dist=True)
+        try:
+            auroc_weighted_ovo = roc_auc_score(gt, probs, average="weighted", multi_class="ovo")
+        except Exception as e:
+            print(f"Error in roc_auc_score weighted ovo: {e}")
+            auroc_weighted_ovo = 0.0
+        self.log("test_auroc_weighted_ovo", auroc_weighted_ovo, sync_dist=True)
+        try:
+            aucpr_macro = average_precision_score(gt, probs, average="macro")
+        except Exception as e:
+            print(f"Error in average_precision_score macro: {e}")
+            aucpr_macro = 0.0
+        self.log("test_aucpr_macro", aucpr_macro, sync_dist=True)
+        try:
+            aucpr_micro = average_precision_score(gt, probs, average="micro")
+        except Exception as e:
+            print(f"Error in average_precision_score micro: {e}")
+            aucpr_micro = 0.0
+        self.log("test_aucpr_micro", aucpr_micro, sync_dist=True)
+
+        print(f"Test AUROC macro: {auroc_macro_ovr:.4f}, {auroc_macro_ovo:.4f}, weighted: {auroc_weighted_ovr:.4f}, {auroc_weighted_ovo:.4f}")
+        print(f"Test AUC-PR macro: {aucpr_macro:.4f}, micro: {aucpr_micro:.4f}")
+
         self.test_step_outputs.clear()
-        return result
+        return metrics
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
@@ -162,7 +207,7 @@ class LitModel_finetune(pl.LightningModule):
         return [optimizer]  # , [scheduler]
 
 
-def get_train_val_split(train_files, train_sub, val_ratio=0.3, seed=42):
+def get_train_val_split(train_files, train_sub, val_ratio=0.3, seed=1):
     """Generate consistent train/validation splits.
     
     Args:
@@ -176,7 +221,7 @@ def get_train_val_split(train_files, train_sub, val_ratio=0.3, seed=42):
         train_files: List of training files
     """
     rng = np.random.RandomState(seed)
-    val_sub = rng.choice(train_sub, size=int(len(train_sub) * val_ratio), replace=False)
+    val_sub = np.random.choice(train_sub, size=int(len(train_sub) * val_ratio), replace=False)
     train_sub = list(set(train_sub) - set(val_sub))
     val_files = [f for f in train_files if f.split("_")[0] in val_sub]
     train_files = [f for f in train_files if f.split("_")[0] in train_sub]
@@ -184,7 +229,7 @@ def get_train_val_split(train_files, train_sub, val_ratio=0.3, seed=42):
 
 def prepare_TUEV_dataloader(args):
     # Use a consistent seed across all random operations
-    global_seed = 42  # Using same seed as train/val split
+    global_seed = 1  # Using same seed as train/val split
     torch.manual_seed(global_seed)
     torch.cuda.manual_seed(global_seed)
     torch.cuda.manual_seed_all(global_seed)
@@ -192,10 +237,10 @@ def prepare_TUEV_dataloader(args):
 
     root = f"datasets/{args.dataset}/edf"
 
-    train_files = sorted(os.listdir(os.path.join(root, "processed_train")))  # Sort for consistency
+    train_files = sorted(os.listdir(os.path.join(root, f"processed_train_{args.secondsBeforeEvent}_{args.secondsAfterEvent}_{args.resampling_rate}")))  # Sort for consistency
     train_sub = sorted(list(set([f.split("_")[0] for f in train_files])))  # Sort subjects
     print("train sub", len(train_sub))
-    test_files = sorted(os.listdir(os.path.join(root, "processed_eval")))  # Sort for consistency
+    test_files = sorted(os.listdir(os.path.join(root, f"processed_eval_{args.secondsBeforeEvent}_{args.secondsAfterEvent}_{args.resampling_rate}")))  # Sort for consistency
 
     # Apply dataset size reduction if specified
     if args.dataset_size < 1.0:
@@ -210,8 +255,11 @@ def prepare_TUEV_dataloader(args):
     # prepare training and test data loader
     train_loader = torch.utils.data.DataLoader(
         TUEVLoader(
-            os.path.join(
-                root, "processed_train"), train_files, args.sampling_rate
+            os.path.join(root, f"processed_train_{args.secondsBeforeEvent}_{args.secondsAfterEvent}_{args.resampling_rate}"),
+            train_files,
+            args.resampling_rate,
+            args.secondsBeforeEvent,
+            args.secondsAfterEvent
         ),
         batch_size=args.batch_size,
         shuffle=True,
@@ -230,7 +278,11 @@ def prepare_TUEV_dataloader(args):
     test_loader = torch.utils.data.DataLoader(
         TUEVLoader(
             os.path.join(
-                root, "processed_eval"), test_files, args.sampling_rate
+                root, f"processed_eval_{args.secondsBeforeEvent}_{args.secondsAfterEvent}_{args.resampling_rate}"),
+            test_files,
+            args.resampling_rate,
+            args.secondsBeforeEvent,
+            args.secondsAfterEvent
         ),
         batch_size=args.batch_size,
         shuffle=False,
@@ -240,7 +292,11 @@ def prepare_TUEV_dataloader(args):
     val_loader = torch.utils.data.DataLoader(
         TUEVLoader(
             os.path.join(
-                root, "processed_train"), val_files, args.sampling_rate
+                root, f"processed_train_{args.secondsBeforeEvent}_{args.secondsAfterEvent}_{args.resampling_rate}"),
+            val_files,
+            args.resampling_rate,
+            args.secondsBeforeEvent,
+            args.secondsAfterEvent
         ),
         batch_size=args.batch_size,
         shuffle=False,
@@ -256,6 +312,18 @@ class TestEpochEnd(pl.Callback):
     def __init__(self, test_dataloader):
         super().__init__()
         self.test_dataloader = test_dataloader
+        self.metrics_history = {
+            "accuracy": [],
+            "balanced_accuracy": [],
+            "cohen_kappa": [],
+            "f1_weighted": [],
+            "roc_auc_macro_ovo": [],
+            "roc_auc_macro_ovr": [],
+            "roc_auc_weighted_ovo": [],
+            "roc_auc_weighted_ovr": [],
+            "aucpr_macro": [],
+            "aucpr_micro": []
+        }
 
     def on_train_epoch_end(self, trainer, pl_module):
         # Switch to eval mode
@@ -284,17 +352,91 @@ class TestEpochEnd(pl.Callback):
             gt, result,
             metrics=["accuracy", "balanced_accuracy", "cohen_kappa", "f1_weighted"]
         )
+
+        # Compute probabilities for AUROC/AUC-PR
+        try:
+            probs = torch.softmax(torch.tensor(result), dim=1).numpy()
+        except Exception as e:
+            print(f"Error in softmax conversion: {e}")
+            probs = result  # fallback, may error below
+
+        try:
+            auroc_macro_ovr = roc_auc_score(gt, probs, average="macro", multi_class="ovr")
+        except Exception as e:
+            print(f"Error in roc_auc_score macro ovr: {e}")
+            auroc_macro_ovr = 0.0
+        self.metrics_history["roc_auc_macro_ovr"].append(auroc_macro_ovr)
+        try:
+            auroc_weighted_ovr = roc_auc_score(gt, probs, average="weighted", multi_class="ovr")
+        except Exception as e:
+            print(f"Error in roc_auc_score weighted ovr: {e}")
+            auroc_weighted_ovr = 0.0
+        self.metrics_history["roc_auc_weighted_ovr"].append(auroc_weighted_ovr)
+        try:
+            auroc_macro_ovo = roc_auc_score(gt, probs, average="macro", multi_class="ovo")
+        except Exception as e:
+            print(f"Error in roc_auc_score macro ovo: {e}")
+            auroc_macro_ovo = 0.0
+        self.metrics_history["roc_auc_macro_ovo"].append(auroc_macro_ovo)
+        try:
+            auroc_weighted_ovo = roc_auc_score(gt, probs, average="weighted", multi_class="ovo")
+        except Exception as e:
+            print(f"Error in roc_auc_score weighted ovo: {e}")
+            auroc_weighted_ovo = 0.0
+        self.metrics_history["roc_auc_weighted_ovo"].append(auroc_weighted_ovo)
+        try:
+            aucpr_macro = average_precision_score(gt, probs, average="macro")
+        except Exception as e:
+            print(f"Error in average_precision_score macro: {e}")
+            aucpr_macro = 0.0
+        self.metrics_history["aucpr_macro"].append(aucpr_macro)
+        try:
+            aucpr_micro = average_precision_score(gt, probs, average="micro")
+        except Exception as e:
+            print(f"Error in average_precision_score micro: {e}")
+            aucpr_micro = 0.0
+        self.metrics_history["aucpr_micro"].append(aucpr_micro)
+
+        # Store metrics in history
+        for metric_name in metrics:
+            self.metrics_history[metric_name].append(metrics[metric_name])
         
         # Log metrics
         pl_module.log("test/epoch_acc", metrics["accuracy"], sync_dist=True)
         pl_module.log("test/epoch_balanced_acc", metrics["balanced_accuracy"], sync_dist=True)
         pl_module.log("test/epoch_cohen", metrics["cohen_kappa"], sync_dist=True)
         pl_module.log("test/epoch_f1", metrics["f1_weighted"], sync_dist=True)
-        
+        pl_module.log("test/epoch_auroc_macro_ovo", auroc_macro_ovo, sync_dist=True)
+        pl_module.log("test/epoch_auroc_macro_ovr", auroc_macro_ovr, sync_dist=True)
+        pl_module.log("test/epoch_auroc_weighted_ovo", auroc_weighted_ovo, sync_dist=True)
+        pl_module.log("test/epoch_auroc_weighted_ovr", auroc_weighted_ovr, sync_dist=True)
+        pl_module.log("test/epoch_aucpr_macro", aucpr_macro, sync_dist=True)
+        pl_module.log("test/epoch_aucpr_micro", aucpr_micro, sync_dist=True)
         # Switch back to training mode
         pl_module.train()
 
+    def on_train_end(self, trainer, pl_module):
+        # Calculate and log mean metrics
+        mean_metrics = {
+            f"mean_{metric}": np.mean(values) 
+            for metric, values in self.metrics_history.items()
+        }
+        var_metrics = {
+            f"var_{metric}": np.var(values)
+            for metric, values in self.metrics_history.items()
+        }
+        
+        # Log mean metrics to wandb using the logger directly
+        for metric_name, mean_value in mean_metrics.items():
+            pl_module.logger.experiment.log({f"test/{metric_name}": mean_value})
+            print(f"Final {metric_name}: {mean_value:.4f}")
+        for metric_name, var_value in var_metrics.items():
+            pl_module.logger.experiment.log({f"test/{metric_name}": var_value})
+            print(f"Final {metric_name}: {var_value:.4f}")
+
+
 def supervised(args):
+    print("Supervised training")
     # get data loaders
     if args.dataset == "TUEV":
         train_loader, test_loader, val_loader = prepare_TUEV_dataloader(args)
@@ -311,10 +453,8 @@ def supervised(args):
             hop_length=args.hop_length,
             mlstm=args.mlstm,
             slstm=args.slstm,
-            use_full_sample=args.use_full_sample,
-            full_sample_method=args.full_sample_method,
         )
-        if args.pretrain_model_path and (args.sampling_rate == 200):
+        if args.pretrain_model_path and (args.resampling_rate == 200):
             model.biot.load_state_dict(torch.load(args.pretrain_model_path))
             print(f"load pretrain model from {args.pretrain_model_path}")
 
@@ -349,7 +489,7 @@ def supervised(args):
             "type": args.model,
             "in_channels": args.in_channels,
             "n_classes": args.n_classes,
-            "sampling_rate": args.sampling_rate
+            "resampling_rate": args.resampling_rate
         }
     })
 
@@ -363,7 +503,7 @@ def supervised(args):
     
     early_stop_callback = EarlyStopping(
         monitor="val/loss",
-        patience=20,
+        patience=70,
         verbose=False,
         mode="min"
     )
@@ -379,7 +519,7 @@ def supervised(args):
         enable_checkpointing=True,
         logger=wandb_logger,
         max_epochs=args.epochs,
-        callbacks=[early_stop_callback, checkpoint_callback, test_callback],  # Add test_callback
+        callbacks=[checkpoint_callback, test_callback],  # early_stop_callback # Add test_callback
     )
 
     # train the model
@@ -405,6 +545,53 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+    
+def prepare_tuev_data(args):
+    print("Preparing TUEV data")
+    # Prepare data
+    root = "datasets/TUEV/edf"
+    train_out_dir = os.path.join(root, f"processed_train_{args.secondsBeforeEvent}_{args.secondsAfterEvent}_{args.resampling_rate}")
+    eval_out_dir = os.path.join(root, f"processed_eval_{args.secondsBeforeEvent}_{args.secondsAfterEvent}_{args.resampling_rate}")
+    if os.path.exists(train_out_dir) and os.path.exists(eval_out_dir):
+        print(f"Data already prepared for {args.secondsBeforeEvent} {args.secondsAfterEvent} {args.resampling_rate}")
+        return
+    else:
+        os.makedirs(train_out_dir)
+        os.makedirs(eval_out_dir)
+
+    BaseDirTrain = os.path.join(root, "train")
+    TrainFeatures = np.empty(
+        (0, args.in_channels, args.sampling_rate)
+    )  # 0 for lack of intialization, 22 for channels, fs for num of points
+    TrainLabels = np.empty([0, 1])
+    TrainOffendingChannel = np.empty([0, 1])
+    load_up_objects(
+        BaseDirTrain,
+        TrainFeatures,
+        TrainLabels,
+        TrainOffendingChannel,
+        train_out_dir,
+        args.secondsBeforeEvent,
+        args.secondsAfterEvent
+    )
+
+    BaseDirEval = os.path.join(root, "eval")
+    EvalFeatures = np.empty(
+        (0, args.in_channels, args.sampling_rate)
+    )  # 0 for lack of intialization, 22 for channels, fs for num of points
+    EvalLabels = np.empty([0, 1])
+    EvalOffendingChannel = np.empty([0, 1])
+    load_up_objects(
+        BaseDirEval,
+        EvalFeatures,
+        EvalLabels,
+        EvalOffendingChannel,
+        eval_out_dir,
+        args.secondsBeforeEvent,
+        args.secondsAfterEvent
+    )
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -425,9 +612,6 @@ if __name__ == "__main__":
         "--in_channels", type=int, default=12, help="number of input channels"
     )
     parser.add_argument(
-        "--sample_length", type=float, default=10, help="length (s) of sample"
-    )
-    parser.add_argument(
         "--val_ratio", type=float, default=0.3, help="validation ratio"
     )
     parser.add_argument(
@@ -440,7 +624,10 @@ if __name__ == "__main__":
         "--n_classes", type=int, default=1, help="number of output classes"
     )
     parser.add_argument(
-        "--sampling_rate", type=int, default=200, help="sampling rate (r)"
+        "--sampling_rate", type=int, default=250, help="sampling rate (r)"
+    )
+    parser.add_argument(
+        "--resampling_rate", type=int, default=200, help="resampling rate (r)"
     )
     parser.add_argument("--token_size", type=int,
                         default=200, help="token size (t)")
@@ -455,13 +642,10 @@ if __name__ == "__main__":
         help="Fraction of dataset to use (0.0-1.0)"
     )
     parser.add_argument(
-        "--use_full_sample", type=str2bool, default=False, 
-        help="Process the full sample at once"
+        "--secondsBeforeEvent", type=int, default=2, help="seconds before event"
     )
     parser.add_argument(
-        "--full_sample_method", type=str, default="attention", 
-        choices=["attention", "convolution"],
-        help="Method to process full sample: 'attention' or 'convolution'"
+        "--secondsAfterEvent", type=int, default=2, help="seconds after event"
     )
     args = parser.parse_args()
     print(args)
@@ -478,22 +662,23 @@ if __name__ == "__main__":
             "val_ratio": args.val_ratio,
             "model": args.model,
             "in_channels": args.in_channels,
-            "sample_length": args.sample_length,
             "mlstm": args.mlstm,
             "slstm": args.slstm,
             "n_classes": args.n_classes,
+            "resampling_rate": args.resampling_rate,
             "sampling_rate": args.sampling_rate,
             "token_size": args.token_size,
             "hop_length": args.hop_length,
             "pretrain_model_path": args.pretrain_model_path,
             "epochs": args.epochs,
             "dataset_size": args.dataset_size,
-            "use_full_sample": args.use_full_sample,
-            "full_sample_method": args.full_sample_method,
+            "secondsBeforeEvent": args.secondsBeforeEvent,
+            "secondsAfterEvent": args.secondsAfterEvent
         },
         settings=wandb.Settings(start_method="fork")
     )
 
+    prepare_tuev_data(args)
     supervised(args)
     
     # Finish the wandb run

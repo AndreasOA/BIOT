@@ -1,0 +1,78 @@
+\section{Experimental Setup and Analysis}
+
+\subsection{Model Architecture}
+We conducted experiments using the BIOT (Biosignal Transformer) architecture \cite{yang2023biot} as our base model. The key modification in our study was replacing the Linear Transformer component of BIOT with different variants of the xLSTM architecture \cite{beck:24xlstm}. Specifically, we implemented the following model configurations:
+
+\begin{itemize}
+    \item \textbf{Linear Transformer}: The original BIOT architecture
+    \item \textbf{M+S-LSTM}: Combination of M-LSTM and S-LSTM components
+    \item \textbf{M-LSTM}: Using only the M-LSTM variant
+    \item \textbf{S-LSTM}: Using only the S-LSTM variant
+\end{itemize}
+
+\subsection{Data Processing and Sample Length}
+For each experiment, we processed the biosignal data with different sample lengths (5, 7, and 9 seconds). The sample window is always centered on the event of interest, with the following distribution:
+\begin{itemize}
+    \item 5-second window: 2 seconds before + 1 second event + 2 seconds after
+    \item 7-second window: 3 seconds before + 1 second event + 3 seconds after
+    \item 9-second window: 4 seconds before + 1 second event + 4 seconds after
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+We evaluated our models using both primary and secondary metrics:
+
+\subsubsection{Primary Metrics}
+The following metrics were used as the main evaluation criteria, consistent with the BIOT paper:
+\begin{itemize}
+    \item Balanced Accuracy
+    \item Cohen's Kappa
+    \item F1 Score
+\end{itemize}
+
+\subsubsection{Secondary Metrics}
+Additional metrics were included for comprehensive comparison and analysis of model performance.
+
+\subsection{Experimental Protocol}
+For each model configuration and sample length, we conducted three independent runs using the default settings from the BIOT paper. This approach ensures:
+\begin{itemize}
+    \item Statistical reliability of the results
+    \item Consistency with the original BIOT implementation
+    \item Fair comparison between different architectural variants
+\end{itemize}
+
+\subsection{Analysis Methods}
+We performed two types of analysis on our experimental results:
+
+\subsubsection{Comprehensive Analysis}
+The first analysis provides a detailed view of model performance, including:
+\begin{itemize}
+    \item Maximum values achieved during training
+    \item Mean performance across runs
+    \item Variance in performance
+\end{itemize}
+This analysis is particularly useful for understanding the full range of model capabilities and stability.
+
+\subsubsection{Simplified Analysis}
+The second analysis focuses on the mean performance with variance, providing a more concise view of:
+\begin{itemize}
+    \item Average performance across runs
+    \item Consistency of results (through variance)
+\end{itemize}
+This simplified view helps in quickly comparing the overall effectiveness of different model configurations.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{2}
+
+\bibitem{yang2023biot}
+Yang, C., Westover, M. B., \& Sun, J. (2023).
+\newblock BIOT: Biosignal Transformer for Cross-data Learning in the Wild.
+\newblock In {\em Thirty-seventh Conference on Neural Information Processing Systems}.
+\newblock \url{https://openreview.net/forum?id=c2LZyTyddi}
+
+\bibitem{beck:24xlstm}
+Beck, M., Pöppel, K., Spanring, M., Auer, A., Prudnikova, O., Kopp, M., Klambauer, G., Brandstetter, J., \& Hochreiter, S. (2024).
+\newblock xLSTM: Extended Long Short-Term Memory.
+\newblock In {\em Thirty-eighth Conference on Neural Information Processing Systems}.
+\newblock \url{https://arxiv.org/abs/2405.04517}
+
+\end{thebibliography} 
