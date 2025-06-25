@@ -6,6 +6,8 @@ pretrained_models/*
 datasets/*
 !datasets/*/
 datasets/*/*
+stored_runs/*
+Poster/*
 *.png
 wandb_checkpoints/*
 wandb_logs/*

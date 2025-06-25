@@ -52,7 +52,6 @@ class LitModel_finetune(pl.LightningModule):
         train_loss = nn.CrossEntropyLoss()(prod, y)
         # Log only per epoch
         self.log("train/loss", train_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
-        self.log("train_loss", train_loss, on_step=False, on_epoch=True, sync_dist=True)
         self.log("train/learning_rate", self.optimizers().param_groups[0]['lr'], on_step=False, on_epoch=True, sync_dist=True)
         return train_loss
 
@@ -63,7 +62,6 @@ class LitModel_finetune(pl.LightningModule):
             val_loss = nn.CrossEntropyLoss()(convScore, y)
             # Log with both formats
             self.log("val/loss", val_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
-            self.log("val_loss", val_loss, on_step=False, on_epoch=True, sync_dist=True)
             
             # Get predicted classes
             pred_classes = torch.argmax(convScore, dim=1)
@@ -102,7 +100,6 @@ class LitModel_finetune(pl.LightningModule):
             gt, result, 
             metrics=["accuracy", "balanced_accuracy", "cohen_kappa", "f1_weighted"]
         )
-        
         # Handle potential NaN values in metrics
         for metric_name in ["accuracy", "balanced_accuracy", "cohen_kappa", "f1_weighted"]:
             if np.isnan(result[metric_name]):
@@ -229,11 +226,10 @@ def get_train_val_split(train_files, train_sub, val_ratio=0.3, seed=1):
 
 def prepare_TUEV_dataloader(args):
     # Use a consistent seed across all random operations
-    global_seed = 1  # Using same seed as train/val split
-    torch.manual_seed(global_seed)
-    torch.cuda.manual_seed(global_seed)
-    torch.cuda.manual_seed_all(global_seed)
-    np.random.seed(global_seed)
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
+    np.random.seed(args.seed)
 
     root = f"datasets/{args.dataset}/edf"
 
@@ -244,13 +240,13 @@ def prepare_TUEV_dataloader(args):
 
     # Apply dataset size reduction if specified
     if args.dataset_size < 1.0:
-        rng = np.random.RandomState(global_seed)  # Use consistent seed
+        rng = np.random.RandomState(args.seed)  # Use consistent seed
         n_train = int(len(train_sub) * args.dataset_size)
         train_sub = sorted(rng.choice(train_sub, size=n_train, replace=False))  # Sort after selection
         print(f"Reduced training set to {args.dataset_size*100}% ({n_train} subjects)")
 
     # Get consistent train/val split using same seed
-    val_files, train_files = get_train_val_split(train_files, train_sub, val_ratio=args.val_ratio, seed=global_seed)
+    val_files, train_files = get_train_val_split(train_files, train_sub, val_ratio=args.val_ratio, seed=args.seed)
 
     # prepare training and test data loader
     train_loader = torch.utils.data.DataLoader(
@@ -473,6 +469,9 @@ def supervised(args):
 
     run_name = f"{wandb.run.name}-{run_name}"
     
+    print(f"\n🚀 Starting training with Wandb run: {wandb.run.name}")
+    print(f"📊 Full run name: {run_name}")
+    
     # Enhanced model logging
     wandb_logger.watch(
         model, 
@@ -493,48 +492,49 @@ def supervised(args):
         }
     })
 
-    checkpoint_callback = ModelCheckpoint(
-        dirpath=f"wandb_checkpoints/{run_name}",
-        filename="{epoch:02d}-{val_loss:.4f}-{train_loss:.4f}",
-        save_top_k=-1,
-        every_n_epochs=1,
-        monitor="val/loss"
+    # Checkpoint for best validation loss
+    checkpoint_callback_loss = ModelCheckpoint(
+        dirpath=f"wandb_checkpoints/{run_name}/loss",
+        filename="best-loss-{epoch:02d}",
+        save_top_k=1,
+        monitor="val/loss",
+        mode="min",
+        verbose=True
     )
     
-    early_stop_callback = EarlyStopping(
-        monitor="val/loss",
-        patience=70,
-        verbose=False,
-        mode="min"
+    # Checkpoint for best balanced accuracy
+    checkpoint_callback_acc = ModelCheckpoint(
+        dirpath=f"wandb_checkpoints/{run_name}/bal_acc",
+        filename="best-balanced-acc-{epoch:02d}",
+        save_top_k=1,
+        monitor="val/balanced_acc",
+        mode="max",
+        verbose=True
     )
 
-    # Create test callback
-    test_callback = TestEpochEnd(test_loader)
+    # Detect if CUDA is available
+    if torch.cuda.is_available():
+        accelerator = "gpu"
+        devices = [0]
+    else:
+        accelerator = "cpu"
+        devices = 1
 
     trainer = pl.Trainer(
-        devices=[0],
-        accelerator="gpu",
-        strategy=DDPStrategy(find_unused_parameters=True),
+        devices=devices,
+        accelerator=accelerator,
+        strategy=DDPStrategy(find_unused_parameters=True) if accelerator == "gpu" else "auto",
         benchmark=True,
         enable_checkpointing=True,
         logger=wandb_logger,
         max_epochs=args.epochs,
-        callbacks=[checkpoint_callback, test_callback],  # early_stop_callback # Add test_callback
+        callbacks=[checkpoint_callback_loss, checkpoint_callback_acc],
     )
 
     # train the model
     trainer.fit(
         lightning_model, train_dataloaders=train_loader, val_dataloaders=val_loader
     )
-
-    # try:
-    #     # Final test evaluation
-    #     pretrain_result = trainer.test(
-    #         model=lightning_model, ckpt_path="best", dataloaders=test_loader
-    #     )[0]
-    #     print(pretrain_result)
-    # except Exception as e:
-    #     print(f"Error during test evaluation: {e}")
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -646,6 +646,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--secondsAfterEvent", type=int, default=2, help="seconds after event"
+    )
+    parser.add_argument(
+        "--seed", type=int, default=42, help="seed"
     )
     args = parser.parse_args()
     print(args)

@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.6.0-devel-ubuntu22.04
+FROM nvidia/cuda:12.9.0-devel-ubuntu22.04
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive

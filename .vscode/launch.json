@@ -74,7 +74,7 @@
             "program": "run_multiclass_supervised.py",
             "args": [
                 "--dataset", "TUEV",
-                "--epochs", "100",
+                "--epochs", "2",
                 "--lr", "0.001",
                 "--weight_decay", "1e-5",
                 "--in_channels", "16",

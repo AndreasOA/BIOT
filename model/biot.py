@@ -104,22 +104,50 @@ class BIOTEncoder(nn.Module):
                 attn_dropout=0.2,  # dropout post-attention
             )
 
-        if self.mlstm:
+        if self.mlstm and self.slstm:
+            sm_cfg = xLSTMBlockStackConfig(
+                mlstm_block=mLSTMBlockConfig(
+                    mlstm=mLSTMLayerConfig(
+                        dropout=0.0,
+                    )
+                ),
+                slstm_block=sLSTMBlockConfig(
+                    slstm=sLSTMLayerConfig(
+                        backend="cuda",
+                        embedding_dim=emb_size,
+                        num_heads=heads,
+                    ),
+                    feedforward=FeedForwardConfig(
+                        proj_factor=1.3,
+                        act_fn="gelu",
+                        embedding_dim=emb_size,
+                        dropout=0.0,
+                        bias=False,
+                        ff_type="ffn_gated"
+                    ),
+                ),
+                embedding_dim=emb_size,
+                context_length=256,
+                num_blocks=4
+            )
+
+            self.x_s_m_lstm_stack = xLSTMBlockStack(sm_cfg)
+
+        if self.mlstm and not self.slstm:
             m_cfg = xLSTMBlockStackConfig(
                 mlstm_block=mLSTMBlockConfig(
                     mlstm=mLSTMLayerConfig(
-                        num_heads=heads,
-                        dropout=0.2,
+                        dropout=0.0,
                     )
                 ),
                 embedding_dim=emb_size,
-                context_length=1024,
-                num_blocks=depth
+                context_length=256,
+                num_blocks=1
             )
 
             self.x_m_lstm_stack = xLSTMBlockStack(m_cfg)
         
-        if self.slstm:
+        if self.slstm and not self.mlstm:
             s_cfg = xLSTMBlockStackConfig(
                 slstm_block=sLSTMBlockConfig(
                     slstm=sLSTMLayerConfig(
@@ -194,11 +222,13 @@ class BIOTEncoder(nn.Module):
         emb = torch.cat(emb_seq, dim=1)
        
         # Continue with existing processing
-        if self.mlstm:
+        if self.mlstm and self.slstm:
+            emb = self.x_s_m_lstm_stack(emb)
+        elif self.mlstm and not self.slstm:
             emb = self.x_m_lstm_stack(emb)
-        if self.slstm:
+        elif not self.mlstm and self.slstm:
             emb = self.x_s_lstm_stack(emb)
-        if not self.slstm and not self.mlstm:
+        else:
             emb = self.transformer(emb)
             
         return emb.mean(dim=1)

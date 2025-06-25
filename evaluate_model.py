@@ -85,20 +85,23 @@ def evaluate_model(lightning_model, test_loader, device):
     return predictions, labels
 
 
-def compute_metrics(predictions, labels):
+def compute_metrics(predictions, labels, save_dir=None):
     """Compute comprehensive metrics"""
-    print("\n" + "="*60)
-    print("TEST RESULTS")
-    print("="*60)
+    # Create a string buffer to capture all output
+    output_lines = []
+    
+    output_lines.append("\n" + "="*60)
+    output_lines.append("TEST RESULTS")
+    output_lines.append("="*60)
     
     # Get predicted classes
     pred_classes = np.argmax(predictions, axis=1)
     
     # Print confusion matrix-like statistics
     unique_classes = np.unique(labels)
-    print("\nPer-class Statistics:")
-    print("Class | Total | Correct | Accuracy")
-    print("-" * 35)
+    output_lines.append("\nPer-class Statistics:")
+    output_lines.append("Class | Total | Correct | Accuracy")
+    output_lines.append("-" * 35)
     overall_correct = 0
     overall_total = 0
     for cls in unique_classes:
@@ -106,12 +109,12 @@ def compute_metrics(predictions, labels):
         total = np.sum(mask)
         correct = np.sum((pred_classes == labels) & mask)
         accuracy = correct / total if total > 0 else 0
-        print(f"{int(cls):5d} | {total:5d} | {correct:7d} | {accuracy:8.2%}")
+        output_lines.append(f"{int(cls):5d} | {total:5d} | {correct:7d} | {accuracy:8.2%}")
         overall_correct += correct
         overall_total += total
-    print("-" * 35)
-    print(f"Total | {overall_total:5d} | {overall_correct:7d} | {overall_correct/overall_total:8.2%}")
-    print()
+    output_lines.append("-" * 35)
+    output_lines.append(f"Total | {overall_total:5d} | {overall_correct:7d} | {overall_correct/overall_total:8.2%}")
+    output_lines.append("")
     
     # Calculate standard metrics
     try:
@@ -120,68 +123,81 @@ def compute_metrics(predictions, labels):
             metrics=["accuracy", "balanced_accuracy", "cohen_kappa", "f1_weighted"]
         )
         
-        print("Standard Metrics:")
-        print(f"Accuracy:          {metrics['accuracy']:.4f}")
-        print(f"Balanced Accuracy: {metrics['balanced_accuracy']:.4f}")
-        print(f"Cohen Kappa:       {metrics['cohen_kappa']:.4f}")
-        print(f"F1 Weighted:       {metrics['f1_weighted']:.4f}")
+        output_lines.append("Standard Metrics:")
+        output_lines.append(f"Accuracy:          {metrics['accuracy']:.4f}")
+        output_lines.append(f"Balanced Accuracy: {metrics['balanced_accuracy']:.4f}")
+        output_lines.append(f"Cohen Kappa:       {metrics['cohen_kappa']:.4f}")
+        output_lines.append(f"F1 Weighted:       {metrics['f1_weighted']:.4f}")
         
     except Exception as e:
-        print(f"Error computing standard metrics: {e}")
+        output_lines.append(f"Error computing standard metrics: {e}")
         metrics = {}
     
     # Compute probabilities for AUROC/AUC-PR
     try:
         probs = torch.softmax(torch.tensor(predictions), dim=1).numpy()
         
-        print("\nROC-AUC Metrics:")
+        output_lines.append("\nROC-AUC Metrics:")
         try:
             auroc_macro_ovr = roc_auc_score(labels, probs, average="macro", multi_class="ovr")
-            print(f"AUROC Macro (OvR):    {auroc_macro_ovr:.4f}")
+            output_lines.append(f"AUROC Macro (OvR):    {auroc_macro_ovr:.4f}")
         except Exception as e:
-            print(f"Error in AUROC macro OvR: {e}")
+            output_lines.append(f"Error in AUROC macro OvR: {e}")
             auroc_macro_ovr = 0.0
             
         try:
             auroc_weighted_ovr = roc_auc_score(labels, probs, average="weighted", multi_class="ovr")
-            print(f"AUROC Weighted (OvR): {auroc_weighted_ovr:.4f}")
+            output_lines.append(f"AUROC Weighted (OvR): {auroc_weighted_ovr:.4f}")
         except Exception as e:
-            print(f"Error in AUROC weighted OvR: {e}")
+            output_lines.append(f"Error in AUROC weighted OvR: {e}")
             auroc_weighted_ovr = 0.0
             
         try:
             auroc_macro_ovo = roc_auc_score(labels, probs, average="macro", multi_class="ovo")
-            print(f"AUROC Macro (OvO):    {auroc_macro_ovo:.4f}")
+            output_lines.append(f"AUROC Macro (OvO):    {auroc_macro_ovo:.4f}")
         except Exception as e:
-            print(f"Error in AUROC macro OvO: {e}")
+            output_lines.append(f"Error in AUROC macro OvO: {e}")
             auroc_macro_ovo = 0.0
             
         try:
             auroc_weighted_ovo = roc_auc_score(labels, probs, average="weighted", multi_class="ovo")
-            print(f"AUROC Weighted (OvO): {auroc_weighted_ovo:.4f}")
+            output_lines.append(f"AUROC Weighted (OvO): {auroc_weighted_ovo:.4f}")
         except Exception as e:
-            print(f"Error in AUROC weighted OvO: {e}")
+            output_lines.append(f"Error in AUROC weighted OvO: {e}")
             auroc_weighted_ovo = 0.0
         
-        print("\nAUC-PR Metrics:")
+        output_lines.append("\nAUC-PR Metrics:")
         try:
             aucpr_macro = average_precision_score(labels, probs, average="macro")
-            print(f"AUC-PR Macro: {aucpr_macro:.4f}")
+            output_lines.append(f"AUC-PR Macro: {aucpr_macro:.4f}")
         except Exception as e:
-            print(f"Error in AUC-PR macro: {e}")
+            output_lines.append(f"Error in AUC-PR macro: {e}")
             aucpr_macro = 0.0
             
         try:
             aucpr_micro = average_precision_score(labels, probs, average="micro")
-            print(f"AUC-PR Micro: {aucpr_micro:.4f}")
+            output_lines.append(f"AUC-PR Micro: {aucpr_micro:.4f}")
         except Exception as e:
-            print(f"Error in AUC-PR micro: {e}")
+            output_lines.append(f"Error in AUC-PR micro: {e}")
             aucpr_micro = 0.0
             
     except Exception as e:
-        print(f"Error computing probability-based metrics: {e}")
+        output_lines.append(f"Error computing probability-based metrics: {e}")
     
-    print("="*60)
+    output_lines.append("="*60)
+    
+    # Join all lines with newlines
+    output_text = "\n".join(output_lines)
+    
+    # Print to console
+    print(output_text)
+    
+    # Save to file if save_dir is provided
+    if save_dir is not None:
+        metrics_file = os.path.join(save_dir, 'metrics.txt')
+        with open(metrics_file, 'w') as f:
+            f.write(output_text)
+    
     return metrics
 
 
@@ -208,7 +224,7 @@ def main():
     # Dataset arguments
     parser.add_argument("--dataset", type=str, default="TUEV", 
                         help="Dataset name")
-    parser.add_argument("--batch_size", type=int, default=512,
+    parser.add_argument("--batch_size", type=int, default=128,
                         help="Batch size for evaluation")
     parser.add_argument("--num_workers", type=int, default=16,
                         help="Number of workers for data loading")

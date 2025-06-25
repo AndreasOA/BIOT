@@ -4,6 +4,7 @@ import mne
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import io
 
 def plot_eeg_with_events(signals, times, events, selected_channels, start_time=None, end_time=None):
     # Set Seaborn style
@@ -61,7 +62,24 @@ def plot_eeg_with_events(signals, times, events, selected_channels, start_time=N
         for ax in axes:
             ax.set_xlim(start_time, end_time)
 
+    # Save the figure to a bytes buffer
+    buf = io.BytesIO()
+    fig.savefig(buf, format='svg', bbox_inches='tight')
+    buf.seek(0)
+    
+    # Display the plot
     st.pyplot(fig)
+    
+    # Add download button
+    st.download_button(
+        label="Download plot as SVG",
+        data=buf,
+        file_name="eeg_plot.svg",
+        mime="image/svg+xml"
+    )
+    
+    # Close the figure to free memory
+    plt.close(fig)
 
 
 def readEDF(fileName):
