@@ -1,0 +1,160 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+\cleardoubleoddpage%  Make sure to start each chapter on a new odd page
+\chapter{Technical Implementation Details}
+\label{app:technical-details}
+
+This appendix provides detailed technical information about the experimental setup, statistical procedures, and implementation specifics that support the main findings presented in Chapters 4 and 5.
+
+\section{Statistical Testing Methodology}
+\label{app:statistical_methodology}
+
+\subsection{Statistical Test Selection Criteria}
+
+The statistical analysis employed both parametric and non-parametric tests to compare architectural variants across identical experimental conditions. The choice between tests was based on normality assessment of the difference distributions.
+
+\textbf{Paired t-test} was employed when normality assumptions were satisfied:
+\begin{equation}
+t = \frac{\bar{d}}{s_d / \sqrt{n}}
+\end{equation}
+where $\bar{d}$ is the mean difference, $s_d$ is the standard deviation of differences, and $n$ is the sample size.
+
+\textbf{Wilcoxon Signed-Rank Test} was applied for non-parametric comparison when normality assumptions were violated:
+\begin{equation}
+H_0: \text{median}(\text{Performance}_A - \text{Performance}_B) = 0
+\end{equation}
+\begin{equation}
+H_1: \text{median}(\text{Performance}_A - \text{Performance}_B) \neq 0
+\end{equation}
+
+\subsection{Normality Assessment Procedure}
+
+Prior to statistical testing, the normality of difference distributions was assessed using:
+\begin{itemize}
+\item Shapiro-Wilk test with significance threshold $p > 0.05$
+\item Visual inspection using Q-Q plots
+\item Histogram analysis of difference distributions
+\end{itemize}
+
+\subsection{Effect Size Calculations}
+
+Effect sizes were calculated to assess practical significance:
+\begin{itemize}
+\item Cohen's d for parametric tests: $d = \frac{\bar{d}}{s_d}$
+\item Interpretation: small (0.2), medium (0.5), large (0.8)
+\item Rank-biserial correlation for non-parametric tests
+\end{itemize}
+
+\section{Detailed Performance Metrics}
+\label{app:detailed_metrics}
+
+\subsection{Complete Performance Results}
+
+Table \ref{tab:complete_results} presents the complete performance metrics across all architectural variants and temporal configurations, including metrics not shown in the main results chapter.
+
+\begin{table}[htbp]
+\centering
+\caption{Complete performance metrics across all configurations. Values represent mean ± standard deviation across five independent runs.}
+\label{tab:complete_results}
+\footnotesize
+\begin{tabular}{l | c | c | c | c | c}
+\textbf{Architecture} & \textbf{Window} & \textbf{Accuracy} & \textbf{AUROC (Macro)} & \textbf{AUROC (Weighted)} & \textbf{AUCPR (Macro)} \\
+\hline
+\multirow{3}{*}{Linear Transformer} & 5s & $0.6886 \pm 0.0359$ & $0.8666 \pm 0.0041$ & $0.8791 \pm 0.0126$ & $0.4675 \pm 0.0133$ \\
+                                    & 7s & $0.6886 \pm 0.0285$ & $0.8585 \pm 0.0184$ & $0.8895 \pm 0.0084$ & $0.4653 \pm 0.0388$ \\
+                                    & 9s & $0.6669 \pm 0.0361$ & $0.8484 \pm 0.0101$ & $0.8646 \pm 0.0117$ & $0.4526 \pm 0.0255$ \\
+\hline
+\multirow{3}{*}{\ac{mLSTM}} & 5s & $0.6845 \pm 0.0142$ & $0.8667 \pm 0.0121$ & $0.8733 \pm 0.0060$ & $0.4827 \pm 0.0094$ \\
+                           & 7s & $0.6999 \pm 0.0083$ & $0.8538 \pm 0.0173$ & $0.8612 \pm 0.0112$ & $0.4855 \pm 0.0339$ \\
+                           & 9s & $0.6809 \pm 0.0535$ & $0.8597 \pm 0.0273$ & $0.8826 \pm 0.0235$ & $0.4894 \pm 0.0388$ \\
+\hline
+\multirow{3}{*}{\ac{sLSTM}} & 5s & $0.6845 \pm 0.0142$ & $0.8667 \pm 0.0121$ & $0.8733 \pm 0.0060$ & $0.4827 \pm 0.0094$ \\
+                           & 7s & $0.7170 \pm 0.0426$ & $0.8724 \pm 0.0172$ & $0.8861 \pm 0.0172$ & $0.5028 \pm 0.0305$ \\
+                           & 9s & $0.6809 \pm 0.0535$ & $0.8597 \pm 0.0273$ & $0.8826 \pm 0.0235$ & $0.4894 \pm 0.0388$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Confusion Matrix Details}
+\label{app:confusion_matrices}
+
+\subsection{Best Performing Model Analysis}
+
+The confusion matrix from the best-performing \ac{sLSTM} model (seed=123, 7s window) reveals detailed class-specific performance patterns:
+
+\begin{center}
+\begin{tabular}{c|cccccc|c}
+& \multicolumn{6}{c}{Predicted} & \\
+True & 0 & 1 & 2 & 3 & 4 & 5 & Total \\
+\hline
+0 & 0 & 312 & 32 & 70 & 0 & 153 & 567 \\
+1 & 31 & 3314 & 764 & 23 & 0 & 545 & 4677 \\
+2 & 43 & 347 & 1005 & 86 & 92 & 425 & 1998 \\
+3 & 0 & 0 & 4 & 226 & 23 & 76 & 329 \\
+4 & 1 & 44 & 9 & 41 & 1391 & 718 & 2204 \\
+5 & 199 & 535 & 163 & 175 & 1311 & 17263 & 19646 \\
+\hline
+Total & 274 & 4552 & 1977 & 621 & 2817 & 19180 & 29421 \\
+\end{tabular}
+\end{center}
+
+\subsection{Class-Specific Error Analysis}
+
+\textbf{Class 0 Complete Failure Pattern:} All 567 instances are misclassified, with the largest fraction (312 instances, 55\%) misclassified as Class 1, suggesting systematic confusion between these classes.
+
+\textbf{Class 1 Confusion Patterns:} While achieving 70.86\% accuracy, Class 1 shows significant confusion with Class 2 (764 instances) and Class 5 (545 instances), indicating potential similarities in their signal characteristics.
+
+\textbf{Class 5 Dominant Performance:} The majority class achieves high accuracy but shows broad confusion patterns across all other classes, particularly misclassifying other classes as Class 5 (e.g., 718 instances of Class 4).
+
+\section{Training Configuration Details}
+\label{app:training_config}
+
+\subsection{Hyperparameter Settings}
+
+The following hyperparameter configuration was used across all experiments:
+
+\begin{itemize}
+\item \textbf{Learning Rate:} 1e-4 with cosine annealing
+\item \textbf{Batch Size:} 32 (determined by GPU memory constraints)
+\item \textbf{Optimizer:} AdamW with weight decay 1e-5
+\item \textbf{Max Epochs:} 50 with early stopping (patience: 10)
+\item \textbf{Model Dimension:} 256
+\item \textbf{Number of Heads:} 8 (for Linear Transformer baseline)
+\item \textbf{Dropout Rate:} 0.1
+\end{itemize}
+
+\subsection{Checkpoint Selection Strategy}
+
+Each run generated two types of checkpoints:
+\begin{itemize}
+\item \textbf{Validation Loss Checkpoint:} Model with minimum validation loss
+\item \textbf{Balanced Accuracy Checkpoint:} Model with maximum validation balanced accuracy
+\end{itemize}
+
+All reported results are from balanced accuracy checkpoints, as these consistently outperformed validation loss checkpoints across architectures.
+
+\section{Coefficient of Variation Analysis}
+\label{app:cv_analysis}
+
+Table \ref{tab:cv_analysis} presents the coefficient of variation (\ac{CV}) across runs for each architecture and temporal window, providing insight into model stability.
+
+\begin{table}[htbp]
+\centering
+\caption{Coefficient of variation (CV) for balanced accuracy across five runs, indicating model stability.}
+\label{tab:cv_analysis}
+\footnotesize
+\begin{tabular}{l | c | c | c}
+\textbf{Architecture} & \textbf{5s Window CV (\%)} & \textbf{7s Window CV (\%)} & \textbf{9s Window CV (\%)} \\
+\hline
+Linear Transformer & 7.80 & 8.57 & 7.70 \\
+\ac{mLSTM} & 3.32 & 4.07 & 5.61 \\
+\ac{sLSTM} & 4.36 & 6.59 & 10.15 \\
+\ac{mLSTM} + \ac{sLSTM} & 3.32 & 4.07 & 5.61 \\
+\hline
+\end{tabular}
+\end{table}
+
+The CV analysis reveals that \ac{mLSTM} provides the most stable performance across runs, while \ac{sLSTM} shows increasing variability with longer temporal windows, particularly at 9 seconds (CV: 10.15\%).
+
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

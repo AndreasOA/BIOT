@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{Statistical Comparison: Linear Transformer (±4s/±4s) vs mLSTM+sLSTM (±3s/±3s)}
+\label{tab:comparison_class_linear_transformer_±4s_±4s_vs_mlstmslstm_±3s_±3s}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Class} & \textbf{Model A} & \textbf{Model B} & \textbf{t-stat} & \textbf{p-value (t)} & \textbf{p-value (W)} \\
+\midrule
+Class 0 & 0.017$\pm$0.028 & 0.042$\pm$0.054 & -0.79 & 0.473 & 0.625 \\
+Class 1 & 0.404$\pm$0.183 & 0.392$\pm$0.052 & 0.17 & 0.871 & 0.625 \\
+Class 2 & 0.512$\pm$0.117 & 0.562$\pm$0.046 & -1.27 & 0.272 & 0.188 \\
+Class 3 & 0.616$\pm$0.153 & 0.706$\pm$0.101 & -3.48 & 0.025* & 0.125 \\
+Class 4 & 0.584$\pm$0.054 & 0.496$\pm$0.123 & 1.80 & 0.146 & 0.125 \\
+Class 5 & 0.774$\pm$0.044 & 0.829$\pm$0.028 & -3.40 & 0.027* & 0.125 \\
+\bottomrule
+\multicolumn{6}{l}{\textit{* p < 0.05, ** p < 0.01}} \\
+\end{tabular}
+\end{table}

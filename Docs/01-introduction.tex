@@ -1,0 +1,112 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+\cleardoubleoddpage%  Make sure to start each chapter on a new odd page
+\chapter{Introduction}
+\label{sec:introduction}
+
+
+\section{Motivation}
+\label{sec:introduction:motivation}
+
+Biological signals, particularly \acf{EEG}, play a crucial role in numerous clinical applications, from neurological disease detection to sleep stage classification \cite{yang2023biot}. The development of deep learning models for biosignal analysis has demonstrated impressive success across diverse applications, including seizure detection, emotion analysis, and motor imagery recognition \cite{yang2023biot}. However, current deep learning models for biosignals are typically specialized for specific datasets and clinical settings, limiting their broader applicability.
+
+Traditional approaches to biosignal modeling using \acf{CNN}, \acf{RNN}, and Transformer architectures face significant challenges when dealing with real-world data variability. These challenges include mismatched channel configurations, variable sample lengths, and missing values that commonly arise from varying recording devices, system errors, and clinical limitations \cite{yang2023biot}. While existing models require extensive data preprocessing to align formats across datasets---often involving truncating, padding, or imputing data---such practices can introduce noise and shift data distributions, leading to poor generalization performance.
+
+The \acf{BIOT} architecture addresses these limitations by introducing a novel biosignal tokenization approach that transforms diverse biosignals into unified "sentence" structures \cite{yang2023biot}. \ac{BIOT} employs Linear Transformers to process these tokenized sequences, enabling cross-data learning and knowledge transfer across different biosignal datasets. However, recent advances in sequence modeling, particularly the development of \acf{xLSTM}, present new opportunities for enhancing temporal dependency modeling in biosignals.
+
+\ac{xLSTM} architectures overcome traditional \ac{LSTM} limitations \cite{hochreiter1997lstm} through exponential gating mechanisms and novel memory structures \cite{beck2024xlstm}. The \ac{xLSTM} family includes \acf{sLSTM} with scalar memory and new memory mixing capabilities, and \acf{mLSTM} with matrix memory that is fully parallelizable \cite{beck2024xlstm}. These architectural improvements address key limitations of traditional \acp{LSTM}, including the inability to revise storage decisions, limited storage capacities, and lack of parallelizability.
+
+Given the superior temporal modeling capabilities of \ac{xLSTM} architectures and the successful application of \ac{BIOT} in biosignal processing, investigating the integration of \ac{xLSTM} components within the \ac{BIOT} framework represents a promising research direction. This integration could potentially enhance the model's ability to capture complex temporal dependencies in biosignal data while maintaining the flexibility and cross-dataset applicability that makes \ac{BIOT} effective.
+
+
+\section{Objectives and Approach}
+\label{sec:introduction:objectives}
+
+The primary objective of this thesis is to evaluate the effectiveness of integrating \ac{xLSTM} architectures within the \ac{BIOT} framework for biosignal classification tasks. Specifically, this work aims to determine whether \ac{xLSTM} variants can enhance temporal dependency modeling compared to the original Linear Transformer-based \ac{BIOT} architecture.
+
+\subsection{Research Questions}
+
+This thesis addresses the following key research questions:
+
+\begin{enumerate}
+    \item Can \ac{xLSTM} architectures effectively replace Linear Transformers in the \ac{BIOT} framework while maintaining or improving EEG classification performance?
+    \item Which \ac{xLSTM} variant (\ac{mLSTM}, \ac{sLSTM}, or combined configurations) demonstrates superior performance for \ac{EEG} classification tasks?
+    \item How do different experimental configurations, particularly varying sample lengths, affect the relative performance of \ac{xLSTM} variants compared to the baseline Linear Transformer?
+\end{enumerate}
+
+\subsection{Evaluation Methodology}
+
+To address these research questions, this thesis employs a comprehensive experimental approach using the \ac{TUEV} dataset. The evaluation compares four distinct model configurations:
+
+\begin{itemize}
+    \item \textbf{Baseline}: Original Linear Transformer-based \ac{BIOT} architecture
+    \item \textbf{\ac{mLSTM}}: \ac{BIOT} with Matrix \ac{LSTM} component
+    \item \textbf{\ac{sLSTM}}: \ac{BIOT} with Scalar \ac{LSTM} component  
+    \item \textbf{M+S-\ac{LSTM}}: \ac{BIOT} with combined \ac{mLSTM} and \ac{sLSTM} components
+\end{itemize}
+
+The experimental design maintains consistency with the original \ac{BIOT} evaluation protocol while incorporating architectural modifications to replace the Linear Transformer component with \ac{xLSTM} blocks. Multiple sample lengths are tested to assess model performance across different temporal contexts, using standard evaluation metrics including Balanced Accuracy, Cohen's Kappa, and Weighted F1 Score.
+
+\subsection{Statistical Analysis and Visualization}
+
+Beyond basic performance comparison, this thesis employs rigorous statistical analysis to ensure robust conclusions:
+
+\begin{itemize}
+    \item \textbf{Statistical Significance Testing}: T-tests and Wilcoxon signed-rank tests are conducted to compare the best-performing model against other configurations, determining which models perform within statistically significant ranges of the optimal solution.
+    
+    \item \textbf{Performance Trend Analysis}: Plots illustrate how evaluation metrics change across different sample lengths. This visualization approach enables identification of optimal temporal contexts and understanding of model stability across different input durations.
+
+    \item \textbf{Confusion Matrix Analysis}: The best-performing model configurations are evaluated again on the test set to generate detailed confusion matrices. This analysis reveals which classes benefit most from the architectural improvements and identifies specific classification challenges that different \ac{xLSTM} variants address.
+\end{itemize}
+
+These analytical approaches provide both quantitative validation of performance improvements and qualitative insights into the behavioral differences between \ac{xLSTM} variants and the baseline Linear Transformer architecture.
+
+\subsection{Dataset and Scope}
+
+This evaluation focuses on the \acf{TUEV} dataset, a subset of the Temple University Hospital \ac{EEG} Corpus that provides a standardized benchmark for \ac{EEG} event classification tasks \cite{harati2015improved}. The \ac{TUEV} dataset was specifically designed to address the challenges of automated \ac{EEG} event detection and classification in clinical settings.
+
+\subsubsection{Dataset Characteristics}
+
+The \ac{TUEV} dataset contains \ac{EEG} recordings with annotations for six distinct event types:
+
+\begin{itemize}
+    \item \textbf{Spike and Slow Wave (SPSW)}: Characteristic epileptiform discharges
+    \item \textbf{Generalized Periodic Epileptiform Discharge (GPED)}: Widespread periodic patterns
+    \item \textbf{Periodic Lateralized Epileptiform Discharge (PLED)}: Localized periodic patterns
+    \item \textbf{Eye Movement (EYEM)}: Ocular artifacts in \ac{EEG} recordings
+    \item \textbf{Artifact (ARTF)}: Various technical and physiological artifacts
+    \item \textbf{Background (BCKG)}: Normal \ac{EEG} background activity
+\end{itemize}
+
+The dataset employs a standard ACNS TCP montage with 16 channels, derived from bipolar combinations of \ac{EEG} electrodes following the international 10-20 system. This montage configuration is widely used in clinical seizure analysis and provides spatial coverage across frontal, temporal, central, and occipital brain regions.
+
+\subsubsection{Data Organization and Scope}
+
+The \ac{TUEV} corpus is divided into training and evaluation sets, with 359 training files and 159 evaluation files. The distribution of events varies across categories, with artifact and background events being most prevalent, while spike and slow wave events are less frequent. This class imbalance reflects the natural distribution of \ac{EEG} events in clinical recordings, where pathological events are typically less frequent than normal background activity.
+
+Each \ac{EEG} sample is processed to extract event-centered windows, where the event of interest is positioned at the center of the temporal window. The original recordings are sampled at 250 Hz and can be resampled to other frequencies (such as 200 Hz) depending on experimental requirements. The temporal windows are extracted with configurable durations before and after the event, allowing for analysis of different temporal contexts.
+
+The dataset's characteristics align with typical clinical \ac{EEG} recording scenarios, ensuring that findings are relevant to practical biosignal processing applications. The multi-class nature of the classification task, combined with the clinical relevance of the event types, makes \ac{TUEV} an appropriate benchmark for evaluating the effectiveness of different sequence modeling architectures in biosignal analysis.
+
+
+\section{Outline}
+\label{sec:introduction:outline}
+
+This thesis is structured as follows:
+
+\textbf{Chapter 2: Background and Related Work} provides the theoretical foundation for this research. It covers the basics of biosignal processing, reviews traditional and modern deep learning approaches for \ac{EEG} analysis, and introduces the \ac{BIOT} architecture. The chapter also presents the \ac{xLSTM} family of architectures, explaining their main innovations and advantages over traditional \acp{LSTM}.
+
+\textbf{Chapter 3: Methodology} describes the experimental design and implementation. This chapter explains how \ac{xLSTM} components are integrated into the \ac{BIOT} framework, describes the modifications made to the original architecture, and outlines the experimental protocol. It also provides details about the \ac{TUEV} dataset, preprocessing steps, and evaluation metrics used in this study.
+
+\textbf{Chapter 4: Experimental Setup} presents the specific configuration parameters, hyperparameter settings, and implementation details. This chapter explains how the evaluation differs from the original \ac{BIOT} protocol and justifies the experimental choices made to ensure fair comparison between architectures.
+
+\textbf{Chapter 5: Results and Analysis} presents the experimental findings and analyzes the performance differences between \ac{xLSTM} variants and the baseline Linear Transformer. The chapter includes statistical analysis, performance comparisons across different sample lengths, and detailed examination of model behavior.
+
+\textbf{Chapter 6: Discussion} interprets the results in relation to existing literature, discusses what the findings mean for biosignal processing, and addresses the limitations of this study. This chapter also explores the practical relevance of the performance improvements and their potential use in clinical applications.
+
+\textbf{Chapter 7: Conclusion} summarizes the key findings, highlights the contributions of this work to biosignal processing, and suggests directions for future research. The chapter also reflects on the broader implications of combining modern sequence modeling architectures with specialized biosignal processing frameworks.
+
+
+
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

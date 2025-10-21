@@ -91,31 +91,38 @@ class BIOTEncoder(nn.Module):
         self.mlstm = mlstm
         self.slstm = slstm
 
+        self.context_length = 1024  # max length after patching
+        self.xlstm_depth = 8
+        self.xlstm_heads = 8
+
         self.patch_embedding = PatchFrequencyEmbedding(
             emb_size=emb_size, n_freq=self.n_fft // 2 + 1
         )
         if not self.mlstm and not self.slstm:
             self.transformer = LinearAttentionTransformer(
                 dim=emb_size,
-                heads=heads,
-                depth=depth,
-                max_seq_len=1024,
+                heads=self.xlstm_heads,
+                depth=self.xlstm_depth,
+                max_seq_len=self.context_length,
                 attn_layer_dropout=0.2,  # dropout right after self-attention layer
                 attn_dropout=0.2,  # dropout post-attention
             )
 
         if self.mlstm and self.slstm:
+            # xLSTM[3:1] configuration - 3 mLSTM blocks + 1 sLSTM block
+            print("Using xLSTM with both mLSTM and sLSTM blocks")
             sm_cfg = xLSTMBlockStackConfig(
                 mlstm_block=mLSTMBlockConfig(
                     mlstm=mLSTMLayerConfig(
-                        dropout=0.0,
+                        dropout=0.2,
                     )
                 ),
                 slstm_block=sLSTMBlockConfig(
                     slstm=sLSTMLayerConfig(
-                        backend="cuda",
+                        backend="cuda", 
                         embedding_dim=emb_size,
-                        num_heads=heads,
+                        num_heads=self.xlstm_heads,
+                        dropout=0.2,
                     ),
                     feedforward=FeedForwardConfig(
                         proj_factor=1.3,
@@ -127,8 +134,9 @@ class BIOTEncoder(nn.Module):
                     ),
                 ),
                 embedding_dim=emb_size,
-                context_length=256,
-                num_blocks=4
+                context_length=self.context_length,
+                num_blocks=self.xlstm_depth,
+                slstm_at=[1]
             )
 
             self.x_s_m_lstm_stack = xLSTMBlockStack(sm_cfg)
@@ -137,22 +145,26 @@ class BIOTEncoder(nn.Module):
             m_cfg = xLSTMBlockStackConfig(
                 mlstm_block=mLSTMBlockConfig(
                     mlstm=mLSTMLayerConfig(
-                        dropout=0.0,
+                        dropout=0.2,
                     )
                 ),
+                slstm_block=None,  # Explicitly set to None
                 embedding_dim=emb_size,
-                context_length=256,
-                num_blocks=1
+                context_length=self.context_length,
+                num_blocks=self.xlstm_depth,
             )
 
             self.x_m_lstm_stack = xLSTMBlockStack(m_cfg)
         
         if self.slstm and not self.mlstm:
             s_cfg = xLSTMBlockStackConfig(
+                mlstm_block=None,
                 slstm_block=sLSTMBlockConfig(
                     slstm=sLSTMLayerConfig(
                         backend="cuda",
                         embedding_dim=emb_size,
+                        num_heads=self.xlstm_heads,
+                        dropout=0.2,
                     ),
                     feedforward=FeedForwardConfig(
                         proj_factor=1.3,
@@ -164,8 +176,8 @@ class BIOTEncoder(nn.Module):
                     ),
                 ),
                 embedding_dim=emb_size,
-                context_length=256,
-                num_blocks=1
+                context_length=self.context_length,
+                num_blocks=self.xlstm_depth,
             )
 
             self.x_s_lstm_stack = xLSTMBlockStack(s_cfg)
@@ -220,6 +232,11 @@ class BIOTEncoder(nn.Module):
 
         # (batch_size, 16 * ts, emb)
         emb = torch.cat(emb_seq, dim=1)
+        
+        # Debug: print sequence length for troubleshooting
+        if not hasattr(self, '_debug_printed'):
+            print(f"Debug: Final sequence length: {emb.shape[1]}, expected max: {self.context_length}")
+            self._debug_printed = True
        
         # Continue with existing processing
         if self.mlstm and self.slstm:

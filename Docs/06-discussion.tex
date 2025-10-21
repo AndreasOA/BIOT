@@ -1,0 +1,278 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+\cleardoubleoddpage%  Make sure to start each chapter on a new odd page
+\chapter{Discussion}
+\label{sec:discussion}
+
+This chapter interprets the experimental findings within the broader context of biosignal processing research, critically examines the modest performance improvements observed with \ac{xLSTM} variants, and discusses the implications for clinical applications. The discussion addresses both the achievements and significant limitations of integrating \ac{xLSTM} architectures within the \ac{BIOT} framework, while positioning these findings within realistic expectations for neurological signal analysis.
+
+\section{Performance Analysis and Interpretation}
+\label{sec:performance_analysis}
+
+The experimental results demonstrate that the \ac{sLSTM} variant achieves modest improvement over the baseline Linear Transformer, with balanced accuracy increasing from $50.08\% \pm 4.29\%$ to $52.26\% \pm 3.44\%$ on the optimal 7-second temporal window configuration. This 4.4\% relative improvement, while consistent across runs, represents a limited advancement that raises important questions about the practical benefits of architectural complexity in biosignal processing applications.
+
+\subsection{Limited Benefits of Enhanced Memory Mechanisms}
+\label{sec:temporal_modeling}
+
+The modest performance improvement of \ac{sLSTM} suggests that the enhanced memory mechanisms, while theoretically promising, provide limited practical benefits for this specific seizure classification task. The exponential gating mechanism introduced in \ac{xLSTM} \cite{beck2024xlstm} appears to offer only marginal advantages over the baseline Linear Transformer for the tokenized \ac{EEG} sequences in the \ac{TUEV} dataset.
+
+Several factors may limit the effectiveness of advanced memory mechanisms in this context:
+
+\textbf{Task Complexity:} The seizure classification task may not require the sophisticated memory capabilities that \ac{xLSTM} provides. The 7-second temporal windows may contain sufficient local patterns for classification without needing complex long-term dependency modeling.
+
+\textbf{Tokenization Limitations:} The \ac{BIOT} tokenization approach may already capture the most relevant temporal patterns, leaving limited room for architectural improvements to provide substantial benefits.
+
+\textbf{Dataset Characteristics:} The \ac{TUEV} dataset's specific characteristics, including class imbalance and signal quality, may constrain the potential benefits of enhanced sequence modeling architectures.
+
+The high variability across runs (coefficient of variation 6-10\%) suggests that training dynamics and random initialization have a more significant impact on performance than architectural choices, indicating that the task may be at the limit of what current deep learning approaches can achieve with the available data.
+
+\subsection{Matrix Memory Mechanisms Show Stability Over Performance}
+\label{sec:matrix_memory_comparison}
+
+The \ac{mLSTM} variant demonstrates a different performance profile compared to \ac{sLSTM}, achieving moderate improvement with balanced accuracy of $51.43\% \pm 2.09\%$ on the 7-second window. While this represents a smaller absolute improvement than \ac{sLSTM}, the \ac{mLSTM} architecture exhibits notably lower variance across runs, suggesting better optimization stability.
+
+\textbf{Stability vs. Peak Performance Trade-off:} The \ac{mLSTM} consistently achieves moderate improvements with low variance, while \ac{sLSTM} shows higher peak performance but with greater uncertainty. This stability could be valuable in clinical applications where consistent performance is crucial.
+
+\textbf{Combined Architecture Findings:} The most surprising result is that the combined \ac{mLSTM} + \ac{sLSTM} architecture produces identical results to \ac{mLSTM} alone across all metrics and configurations. The exact duplication of mean values and standard deviations suggests either:
+\begin{itemize}
+\item Implementation issues where the \ac{sLSTM} component is not activated in the combined architecture
+\item Optimization challenges where the combined system defaults to using only one memory mechanism
+\item Architectural constraints where the benefits of the two mechanisms cancel each other
+\end{itemize}
+
+This finding raises important questions about the implementation and highlights the challenges of combining complex architectural components effectively.
+
+\subsection{Limited Scope of Sequence Modeling Benefits in Biosignals}
+\label{sec:sequence_modeling_implications}
+
+The modest improvements observed with \ac{xLSTM} variants suggest that advanced sequence modeling may have limited applicability to tokenized biosignal processing, at least within the current \ac{BIOT} framework. Unlike natural language processing tasks where \ac{xLSTM} has shown substantial benefits \cite{beck2024xlstm}, biosignal sequence modeling appears to be constrained by factors beyond architectural sophistication.
+
+\textbf{Domain-Specific Limitations:} The tokenized representation of \ac{EEG} signals may not possess the complex sequential dependencies that \ac{xLSTM} is designed to model. Neurological events may be sufficiently characterized by local spatiotemporal patterns that do not require sophisticated long-term memory mechanisms.
+
+\textbf{Task Complexity Mismatch:} While \ac{xLSTM} excels in language modeling with vast vocabularies and complex dependencies, seizure classification may represent a more constrained pattern recognition problem where simpler architectures are sufficient.
+
+\textbf{Implementation Considerations:} The lack of statistical significance in most comparisons, combined with high inter-run variance, suggests that training dynamics and optimization challenges may overshadow architectural improvements for this specific application domain.
+
+\section{Temporal Window Effects and Model Limitations}
+\label{sec:temporal_window_analysis}
+
+The experimental findings reveal complex temporal window effects that vary significantly across architectures. Notably, the Linear Transformer performs best with 5-second windows ($52.06\% \pm 4.06\%$), while \ac{sLSTM} achieves optimal performance with 7-second windows ($52.26\% \pm 3.44\%$), and all architectures show degradation with 9-second windows.
+
+\subsection{Architecture-Dependent Temporal Sensitivity}
+\label{sec:temporal_sensitivity}
+
+The differential response to temporal window length across architectures reveals important limitations:
+
+\textbf{Linear Transformer Degradation:} The baseline shows a clear monotonic decrease in performance as window length increases (52.06\% → 50.08\% → 48.45\%), suggesting computational or attention mechanism limitations with longer sequences.
+
+\textbf{\ac{sLSTM} Peak at 7 seconds:} The \ac{sLSTM} architecture achieves optimal performance at intermediate window lengths, suggesting that its enhanced memory mechanisms can effectively utilize moderate temporal context but struggle with longer sequences.
+
+\textbf{Computational vs. Neurophysiological Constraints:} The performance degradation at 9-second windows across all architectures indicates that computational limitations may be more constraining than neurophysiological considerations. The patterns suggest that current architectures struggle with sequence lengths corresponding to longer temporal contexts rather than that such contexts are neurophysiologically irrelevant.
+
+\subsection{Computational Considerations in Extended Temporal Contexts}
+\label{sec:computational_considerations}
+
+From a computational perspective, the performance degradation at longer temporal windows reflects the challenges of maintaining relevant information across extended sequences. Even with the enhanced memory mechanisms of \ac{xLSTM}, processing longer sequences increases the complexity of temporal dependencies that must be captured and may lead to difficulties in gradient propagation during training.
+
+The consistent pattern of degradation across all architectural variants suggests that this limitation is not specific to particular memory mechanisms but rather reflects fundamental challenges in long-sequence modeling for this specific application domain. The \ac{BIOT} tokenization approach, while enabling flexible sequence lengths, may generate token sequences that become increasingly difficult to process effectively as temporal windows expand.
+
+\section{Critical Assessment of Findings}
+\label{sec:critical_assessment}
+
+The modest performance improvements observed with \ac{xLSTM} variants must be interpreted within the broader context of biosignal processing challenges and realistic expectations for clinical deployment.
+
+\subsection{Statistical Significance and Practical Relevance}
+\label{sec:statistical_significance}
+
+The lack of statistical significance in most performance comparisons (p > 0.05) represents a critical limitation of this study. Despite consistent directional improvements, the small effect sizes combined with high inter-run variance prevent definitive conclusions about architectural superiority:
+
+\textbf{Sample Size Limitations:} With only 5 runs per configuration, the study lacks sufficient statistical power to detect small but potentially meaningful differences between architectures.
+
+\textbf{High Baseline Variance:} The substantial standard deviations (3-5\% for balanced accuracy) indicate that training dynamics, initialization, and dataset characteristics have a more significant impact on performance than architectural choices.
+
+\textbf{Clinical Relevance Threshold:} The 4.4\% relative improvement (2.18 percentage points absolute) achieved by \ac{sLSTM}, while consistent, may not represent clinically meaningful improvement given the confidence intervals overlap significantly.
+
+\subsection{Class Imbalance and Clinical Limitations}
+\label{sec:class_imbalance}
+
+The confusion matrix analysis reveals severe limitations that question the clinical viability of all tested architectures:
+
+\textbf{Complete Class Failure:} The failure to correctly classify any instances of Class 0 represents a critical safety concern. In clinical applications, missing any seizure type could have severe patient safety implications.
+
+\textbf{Majority Class Bias:} The 87.87\% accuracy on Class 5 (66.77\% of data) versus 0\% accuracy on Class 0 (1.93\% of data) demonstrates classic imbalanced learning problems that limit real-world applicability.
+
+\textbf{Inconsistent Performance:} The wide range of class-specific accuracies (0-87.87\%) suggests that the models have not learned generalizable seizure detection patterns but rather dataset-specific biases.
+
+\section{Limitations and Future Directions}
+\label{sec:limitations}
+
+This study reveals several fundamental limitations that must be addressed for meaningful progress in automated seizure classification.
+
+\subsection{Architectural Limitations}
+\label{sec:architectural_limitations}
+
+\textbf{Combined Architecture Failure:} The identical performance of \ac{mLSTM} + \ac{sLSTM} and \ac{mLSTM} alone suggests implementation issues or fundamental limitations in combining different \ac{xLSTM} mechanisms. This finding indicates that architectural complexity may not translate to performance gains in this domain.
+
+\textbf{Temporal Window Constraints:} The performance degradation beyond 7-second windows across all architectures suggests fundamental limitations in current sequence modeling approaches for biosignal processing rather than optimal neurophysiological context identification.
+
+\textbf{Limited Transfer from NLP Success:} The modest improvements compared to dramatic \ac{xLSTM} success in natural language processing indicate that biosignal sequence modeling may require domain-specific architectural innovations rather than adaptations from other fields.
+
+\subsection{Dataset and Evaluation Limitations}
+\label{sec:evaluation_limitations}
+
+\textbf{Single Dataset Evaluation:} The evaluation on only the \ac{TUEV} dataset limits generalizability. The specific characteristics of this dataset, including class distribution and signal quality, may not represent broader clinical populations.
+
+\textbf{Limited Sample Size:} Five runs per configuration provide insufficient statistical power for robust conclusions about architectural superiority, particularly given the observed variance levels.
+
+\textbf{Evaluation Metrics:} While balanced accuracy addresses class imbalance, the clinical relevance of the specific classes and their relative importance for patient outcomes remains unclear from the current evaluation framework.
+
+\section{Future Research Directions}
+\label{sec:future_research}
+
+Based on the findings and limitations identified, several critical research directions emerge:
+
+\subsection{Methodological Improvements}
+
+\textbf{Larger-Scale Evaluation:} Future studies should include multiple datasets and significantly more experimental runs to enable robust statistical analysis and generalizability assessment.
+
+\textbf{Class Imbalance Mitigation:} Developing techniques specifically designed for severely imbalanced medical datasets, potentially through specialized loss functions, sampling strategies, or architectural modifications.
+
+\textbf{Clinical Validation:} Moving beyond accuracy metrics to evaluate clinical impact, including sensitivity analysis for rare but critical seizure types and false positive/negative cost assessment.
+
+\subsection{Architectural Innovation}
+
+\textbf{Domain-Specific Design:} Rather than adapting successful architectures from other domains, developing sequence models specifically designed for biomedical temporal patterns and their unique characteristics.
+
+\textbf{Interpretability Integration:} Incorporating interpretability mechanisms to enable clinical validation and trust in automated systems, particularly for understanding failure modes like the complete Class 0 misclassification.
+
+\textbf{Multi-Modal Integration:} Exploring architectures that can effectively combine \ac{EEG} with other biomedical signals and clinical metadata to improve overall diagnostic accuracy.
+
+However, the limited performance improvements and critical class-specific failures (complete Class 0 misclassification) indicate that current approaches are far from clinical deployment readiness.
+
+\subsection{Clinical Deployment Limitations}
+\label{sec:deployment_limitations}
+
+Despite computational efficiency advantages, several critical barriers prevent clinical deployment:
+
+\textbf{Safety Concerns:} The complete failure to classify Class 0 (567 samples, 0\% accuracy) represents an unacceptable safety risk in clinical settings where missing any seizure type could have severe patient consequences.
+
+\textbf{Performance Variability:} High inter-run variance (CV: 6-10\%) indicates unreliable performance that would be problematic in clinical environments requiring consistent detection capabilities.
+
+\textbf{Lack of Statistical Validation:} Most improvements lack statistical significance, failing to meet the rigorous evidence standards required for medical device approval and clinical adoption.
+
+\subsection{Generalizability Concerns}
+\label{sec:generalizability_concerns}
+
+The single-dataset evaluation severely limits conclusions about generalizability. Given the modest improvements observed even on a single dataset, cross-dataset performance remains highly uncertain.
+
+\textbf{Dataset-Specific Optimization:} The performance patterns observed may reflect dataset-specific characteristics rather than generalizable improvements in seizure detection capabilities.
+
+\textbf{Class Distribution Sensitivity:} The severe class imbalance issues observed suggest that performance would likely vary significantly across datasets with different class distributions.
+
+\textbf{Validation Requirements:} Before any clinical consideration, multi-dataset validation demonstrating consistent performance improvements and resolution of class-specific failures would be essential.
+
+\section{Study Limitations and Critical Analysis}
+\label{sec:study_limitations}
+
+The modest and statistically non-significant improvements observed in this study, combined with critical class-specific failures, reveal several fundamental limitations that constrain the interpretation and applicability of these findings.
+
+\subsection{Dataset Scope and Generalizability Concerns}
+\label{sec:dataset_limitations}
+
+The current evaluation is limited to the \ac{TUEV} dataset, which, while comprehensive within its specific domain, represents only one type of neurological event classification task. The generalizability of the observed performance improvements to other \ac{EEG} analysis tasks, such as sleep stage classification, seizure detection, or brain-computer interface applications, remains to be established.
+
+Different \ac{EEG} analysis tasks may exhibit varying characteristics, but the modest benefits observed in seizure classification raise questions about the general applicability of \ac{xLSTM} enhancements in biosignal processing. The lack of statistical significance and critical class-specific failures suggest fundamental limitations that may apply broadly.
+
+The single-dataset evaluation prevents assessment of generalizability, but given the limited improvements observed even on a single dataset with 5 runs, cross-dataset performance improvements appear uncertain. The observed class imbalance issues and high variance would likely be exacerbated across different datasets with varying characteristics.
+
+\subsection{Computational Resource Constraints}
+\label{sec:computational_constraints}
+
+The experimental design was constrained by available computational resources, limiting the exploration of larger model configurations and extended training regimes. The \ac{xLSTM} architectures, particularly the combined \ac{mLSTM} + \ac{sLSTM} variant, may require additional computational resources and longer training times to reach their full potential.
+
+The parameter sweep methodology, while comprehensive within the defined constraints, could not explore all possible architectural configurations and hyperparameter combinations. Larger-scale experiments with increased computational resources might reveal additional performance benefits or identify optimal configurations not discovered in the current study.
+
+The limitation to relatively small model sizes also prevents direct comparison with large-scale pre-trained models that have shown impressive performance in other domains. Future research should investigate the scaling properties of \ac{xLSTM}-enhanced \ac{BIOT} models and their potential for large-scale pre-training applications.
+
+\subsection{Temporal Window Limitations}
+\label{sec:temporal_limitations}
+
+The evaluation was restricted to temporal windows of 5, 7, and 9 seconds, which may not capture the full range of temporal contexts relevant for different types of neurological events. Some neurological phenomena, such as seizure propagation patterns or sleep state transitions, may require longer temporal contexts that were not evaluated in this study.
+
+The optimal 7-second window identified in this study reflects the specific characteristics of the events in the \ac{TUEV} dataset and may not generalize to other types of neurological events or clinical applications. Different event types may have distinct optimal temporal contexts that require separate optimization.
+
+Additionally, the fixed temporal window approach may not be optimal for all types of neurological events, which can exhibit variable durations and temporal evolution patterns. Adaptive temporal window selection or multi-scale temporal analysis might provide additional benefits that were not explored in the current fixed-window framework.
+
+\subsection{Limited Baseline Comparisons}
+\label{sec:baseline_limitations}
+
+The comparison is primarily limited to the Linear Transformer baseline within the \ac{BIOT} framework, without direct comparison to other state-of-the-art \ac{EEG} analysis approaches. While this design choice enables focused evaluation of \ac{xLSTM} contributions, it limits the assessment of absolute performance relative to the broader field of \ac{EEG} analysis methods.
+
+Future studies should include comparisons with traditional \ac{CNN}-based approaches, standard \ac{RNN} architectures, and other recent innovations in biosignal processing to provide a more comprehensive performance assessment. Such comparisons would better establish the practical significance of the observed improvements and their competitiveness with alternative approaches.
+
+\section{Future Directions and Research Opportunities}
+\label{sec:future_directions}
+
+Despite the limited improvements observed with \ac{xLSTM} integration, several research directions could potentially address the fundamental challenges identified in this study and advance automated biosignal analysis.
+
+\subsection{Multi-Modal Biosignal Integration}
+\label{sec:multimodal_integration}
+
+The \ac{BIOT} framework's flexibility in handling heterogeneous data formats creates opportunities for extending \ac{xLSTM} integration to multi-modal biosignal analysis. Combining \ac{EEG} with other neurophysiological signals such as \ac{EMG}, \ac{ECG}, or physiological sensors could provide richer contextual information for event detection and classification.
+
+Multi-modal approaches could potentially address some of the limitations observed in single-modality \ac{EEG} analysis. For example, \ac{ECG} signals could provide autonomic nervous system context, while \ac{EMG} signals could help distinguish neurological events from movement artifacts.
+
+However, given the modest benefits observed with \ac{xLSTM} in single-modality analysis, the effectiveness of enhanced memory mechanisms for multi-modal integration remains uncertain and would require careful validation.
+
+\subsection{Large-Scale Pre-training and Foundation Models}
+\label{sec:foundation_models}
+
+Given the limited improvements observed even with moderate-scale training, the potential benefits of large-scale pre-training with \ac{xLSTM} architectures remain unclear. The modest performance gains (4.4\% relative improvement) suggest that architectural sophistication alone may not be sufficient for substantial advances in biosignal analysis.
+
+Large-scale pre-training efforts should focus first on addressing fundamental challenges such as class imbalance, training variance, and domain-specific optimization rather than simply scaling existing architectures.
+
+\subsection{Real-Time Clinical Deployment}
+\label{sec:realtime_deployment}
+
+Real-time clinical deployment remains a distant goal given the fundamental limitations identified in this study. The complete failure to classify Class 0 and severe class imbalance issues represent critical safety concerns that must be resolved before any clinical consideration.
+
+Before addressing deployment challenges, research must focus on:
+\begin{itemize}
+\item Resolving the complete Class 0 classification failure
+\item Addressing severe class imbalance and majority class bias
+\item Achieving statistically significant and clinically meaningful improvements
+\item Demonstrating robust performance across multiple datasets and patient populations
+\end{itemize}
+
+\subsection{Adaptive and Personalized Models}
+\label{sec:adaptive_models}
+
+The enhanced memory mechanisms in \ac{xLSTM} architectures \cite{beck2024xlstm} could enable development of adaptive models that personalize their behavior based on individual patient characteristics and recording conditions. Such personalization could improve detection accuracy and reduce false alarm rates in clinical monitoring applications.
+
+% TODO: Add citations for:
+% - Hochreiter & Schmidhuber (1997) for original LSTM paper
+% - Additional EEG analysis papers for comparative baselines
+% - Clinical validation studies for automated EEG monitoring
+% - Relevant neurophysiology papers for temporal window interpretation
+% - Edge computing and real-time deployment papers
+
+Adaptive models could learn patient-specific patterns during initial monitoring periods and continuously update their internal representations based on observed data. The ability of \ac{xLSTM} to revise storage decisions could be particularly valuable for such adaptive applications, enabling models to update their understanding of patient-specific patterns over time.
+
+Personalization could also extend to adaptation for different recording conditions, electrode configurations, and clinical protocols. The flexibility of the \ac{BIOT} tokenization approach, combined with the enhanced memory mechanisms of \ac{xLSTM}, could enable robust performance across varying clinical contexts without requiring extensive retraining.
+
+\section{Discussion Summary}
+\label{sec:discussion_conclusion}
+
+This investigation reveals both the potential and significant limitations of integrating \ac{xLSTM} architectures within the \ac{BIOT} framework for seizure classification. While \ac{sLSTM} achieves consistent but modest improvements (4.4\% relative), the lack of statistical significance and critical class-specific failures highlight fundamental challenges in medical machine learning that extend beyond architectural innovation.
+
+The findings demonstrate that successful approaches from natural language processing do not directly transfer to biosignal analysis, suggesting the need for domain-specific solutions. The complete failure on minority classes and high training variance indicate that current approaches are far from clinical viability.
+
+Most importantly, this work provides a realistic assessment of the current limitations in automated seizure classification and emphasizes the need for:
+\begin{itemize}
+\item Honest reporting of modest improvements and statistical limitations
+\item Focus on fundamental challenges like class imbalance before architectural refinements  
+\item Larger-scale evaluation with multiple datasets and robust statistical analysis
+\item Recognition that incremental architectural improvements alone may be insufficient for clinical impact
+\end{itemize}
+
+Future research should prioritize addressing these fundamental limitations rather than pursuing incremental architectural modifications, acknowledging that meaningful clinical impact may require more substantial methodological innovations.

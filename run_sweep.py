@@ -14,6 +14,12 @@ from evaluate_model import load_model_from_checkpoint, evaluate_model, compute_m
 from utils import TUEVLoader
 import wandb
 import glob
+import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
+
+wandb.login(key=os.getenv("WANDB_API_KEY"))
 
 class Args:
     """Class to hold arguments as attributes"""
@@ -63,6 +69,13 @@ def get_latest_wandb_run():
 def plot_confusion_matrix(y_true, y_pred, save_path):
     """Plot and save confusion matrix"""
     cm = confusion_matrix(y_true, y_pred)
+    
+    # Save confusion matrix as CSV table
+    csv_save_path = save_path.replace('.png', '.csv')
+    cm_df = pd.DataFrame(cm)
+    cm_df.to_csv(csv_save_path, index=True, header=True)
+    
+    # Create and save the plot
     plt.figure(figsize=(10, 8))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
     plt.title('Confusion Matrix')
@@ -101,6 +114,18 @@ def evaluate_checkpoint(checkpoint_path, params, device):
     cm_save_path = os.path.join(save_dir, 'confusion_matrix.png')
     plot_confusion_matrix(labels, pred_classes, cm_save_path)
     
+    # Save run summary for statistical analysis
+    run_summary = {
+        'model_type': f"BIOT_mlstm={params['mlstm']}_slstm={params['slstm']}",
+        'seed': params['seed'],
+        'metrics': metrics,
+        'params': params
+    }
+    summary_path = os.path.join(save_dir, 'run_summary.json')
+    with open(summary_path, 'w') as f:
+        import json
+        json.dump(run_summary, f, indent=2)
+    
     return metrics
 
 def generate_parameter_combinations() -> List[Dict]:
@@ -120,12 +145,12 @@ def generate_parameter_combinations() -> List[Dict]:
         'n_classes': [6],
         'epochs': [100],
         'mlstm': [True],
-        'slstm': [True],
+        'slstm': [False],
         'dataset_size': [1.0],
         'val_ratio': [0.1],
-        'secondsBeforeEvent': [3],
-        'secondsAfterEvent': [3],
-        'seed': [42, 123, 456]
+        'secondsBeforeEvent': [4],
+        'secondsAfterEvent': [4],
+        'seed': [456, 999, 10]
     }
     #         'full_sample_method': ['attention', 'convolution'],
     # Get all keys and values
@@ -137,7 +162,9 @@ def generate_parameter_combinations() -> List[Dict]:
     for combination in itertools.product(*values):
         param_dict = dict(zip(keys, combination))
         # Only keep combinations where secondsBeforeEvent equals secondsAfterEvent
-        if param_dict['secondsBeforeEvent'] == param_dict['secondsAfterEvent']:
+        # AND ensure valid xLSTM configurations (at least one of mlstm or slstm must be True)
+        if (param_dict['secondsBeforeEvent'] == param_dict['secondsAfterEvent'] and 
+            (param_dict['mlstm'] or param_dict['slstm'])):  # At least one must be True
         #    if (param_dict['slstm'] == True and param_dict['secondsBeforeEvent'] == 3 and param_dict['secondsAfterEvent'] == 3) \
         #        or (param_dict['slstm'] == False and param_dict['secondsBeforeEvent'] == 2 and param_dict['secondsAfterEvent'] == 2):
             combinations.append(param_dict)
