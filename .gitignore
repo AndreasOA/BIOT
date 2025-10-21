@@ -7,8 +7,12 @@ datasets/*
 !datasets/*/
 datasets/*/*
 stored_runs/*
-!stored_runs/final_results/metric/*
+!stored_runs/final_results/
+stored_runs/final_results/*
+!stored_runs/final_results/metrics/
+!stored_runs/final_results/metrics/*
 !stored_runs/final_results/runtime.txt
+!stored_runs/final_results/tests/
 !stored_runs/final_results/tests/*
 Poster/*
 *.png
