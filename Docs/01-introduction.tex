@@ -8,21 +8,19 @@
 \section{Motivation}
 \label{sec:introduction:motivation}
 
-Biological signals, particularly \acf{EEG}, play a crucial role in numerous clinical applications, from neurological disease detection to sleep stage classification \cite{yang2023biot}. The development of deep learning models for biosignal analysis has demonstrated impressive success across diverse applications, including seizure detection, emotion analysis, and motor imagery recognition \cite{yang2023biot}. However, current deep learning models for biosignals are typically specialized for specific datasets and clinical settings, limiting their broader applicability.
+Epileptic seizure classification from electroencephalography (\ac{EEG}) remains a challenging task in clinical decision support, despite decades of algorithmic development. \ac{EEG} signals are typically affected by noise, artifacts, varying montage configurations, and inconsistencies in recording protocols. Beyond that, meaningful clinical information often depends on both local temporal patterns and broader temporal, spatial dependencies across multiple channels. These properties make automated \ac{EEG} interpretation fundamentally different from many domains in which deep learning architectures were originally developed.
 
-Traditional approaches to biosignal modeling using \acf{CNN}, \acf{RNN}, and Transformer architectures face significant challenges when dealing with real-world data variability. These challenges include mismatched channel configurations, variable sample lengths, and missing values that commonly arise from varying recording devices, system errors, and clinical limitations \cite{yang2023biot}. While existing models require extensive data preprocessing to align formats across datasets---often involving truncating, padding, or imputing data---such practices can introduce noise and shift data distributions, leading to poor generalization performance.
+Recent years have seen growing interest in applying modern sequence architectures to biosignals. Transformer-based approaches, such as the \acf{BIOT}~\cite{yang2023biot}, have shown promising performance due to their capacity to model long-range dependencies and their flexibility in handling complex multichannel data. At the same time, there has been a renewed focus on recurrent architectures, most notably through the introduction of \acf{xLSTM} models~\cite{beck2024xlstm}, which refine memory dynamics and introduce alternative mechanisms for temporal information integration. These developments raise an important open question: do architectural refinements designed primarily for large-scale language modeling translate into meaningful advantages for clinical \ac{EEG} seizure classification?
 
-The \acf{BIOT} architecture addresses these limitations by introducing a novel biosignal tokenization approach that transforms diverse biosignals into unified "sentence" structures \cite{yang2023biot}. \ac{BIOT} employs Linear Transformers to process these tokenized sequences, enabling cross-data learning and knowledge transfer across different biosignal datasets. However, recent advances in sequence modeling, particularly the development of \acf{xLSTM}, present new opportunities for enhancing temporal dependency modeling in biosignals.
+Addressing this question requires moving beyond high-level architectural claims and examining performance in a controlled and clinically relevant setting. \ac{EEG} seizure detection involves imbalanced class distributions, heterogeneous recording conditions, and varying temporal context requirements. In such an environment, it is not sufficient to demonstrate numerical improvements alone; observed differences must be statistically robust, computationally justifiable, and practically meaningful for real-world clinical use.
 
-\ac{xLSTM} architectures overcome traditional \ac{LSTM} limitations \cite{hochreiter1997lstm} through exponential gating mechanisms and novel memory structures \cite{beck2024xlstm}. The \ac{xLSTM} family includes \acf{sLSTM} with scalar memory and new memory mixing capabilities, and \acf{mLSTM} with matrix memory that is fully parallelizable \cite{beck2024xlstm}. These architectural improvements address key limitations of traditional \acp{LSTM}, including the inability to revise storage decisions, limited storage capacities, and lack of parallelizability.
-
-Given the superior temporal modeling capabilities of \ac{xLSTM} architectures and the successful application of \ac{BIOT} in biosignal processing, investigating the integration of \ac{xLSTM} components within the \ac{BIOT} framework represents a promising research direction. This integration could potentially enhance the model's ability to capture complex temporal dependencies in biosignal data while maintaining the flexibility and cross-dataset applicability that makes \ac{BIOT} effective.
+This thesis systematically evaluates whether \ac{xLSTM}-based architectures offer advantages over transformer-based biosignal sequence models for \ac{EEG} seizure classification. Four architectures are considered: a Linear Transformer baseline, \acf{sLSTM} and \acf{mLSTM} variants, and a combined model. All models are evaluated on the Temple University \ac{EEG} Event Corpus (\ac{TUEV}) using multiple temporal window configurations to analyze sensitivity to temporal context. To ensure methodological comparability, the evaluation framework remains consistent with the established \ac{BIOT} pipeline~\cite{yang2023biot}, modifying only the sequence modeling component while retaining tokenization and projection stages.
 
 
 \section{Objectives and Approach}
 \label{sec:introduction:objectives}
 
-The primary objective of this thesis is to evaluate the effectiveness of integrating \ac{xLSTM} architectures within the \ac{BIOT} framework for biosignal classification tasks. Specifically, this work aims to determine whether \ac{xLSTM} variants can enhance temporal dependency modeling compared to the original Linear Transformer-based \ac{BIOT} architecture.
+The primary objective of this thesis is to evaluate the effectiveness of integrating \ac{xLSTM} architectures within the \ac{BIOT} framework for \ac{EEG} seizure classification. Specifically, this work aims to determine whether \ac{xLSTM} variants can enhance temporal dependency modeling compared to the original Linear Transformer-based \ac{BIOT} architecture.
 
 \subsection{Research Questions}
 
@@ -63,30 +61,9 @@ These analytical approaches provide both quantitative validation of performance 
 
 \subsection{Dataset and Scope}
 
-This evaluation focuses on the \acf{TUEV} dataset, a subset of the Temple University Hospital \ac{EEG} Corpus that provides a standardized benchmark for \ac{EEG} event classification tasks \cite{harati2015improved}. The \ac{TUEV} dataset was specifically designed to address the challenges of automated \ac{EEG} event detection and classification in clinical settings.
+This evaluation uses the \acf{TUEV} dataset~\cite{harati2015improved}, a subset of the Temple University Hospital \ac{EEG} Corpus specifically designed for \ac{EEG} event classification. The dataset contains clinical recordings with annotations for six event types, including epileptiform discharges (\ac{SPSW}, \ac{GPED}, \ac{PLED}), artifacts, eye movements, and background activity. The multi-class classification task reflects real clinical scenarios with imbalanced class distributions, where pathological events are less frequent than normal activity.
 
-\subsubsection{Dataset Characteristics}
-
-The \ac{TUEV} dataset contains \ac{EEG} recordings with annotations for six distinct event types:
-
-\begin{itemize}
-    \item \textbf{Spike and Slow Wave (SPSW)}: Characteristic epileptiform discharges
-    \item \textbf{Generalized Periodic Epileptiform Discharge (GPED)}: Widespread periodic patterns
-    \item \textbf{Periodic Lateralized Epileptiform Discharge (PLED)}: Localized periodic patterns
-    \item \textbf{Eye Movement (EYEM)}: Ocular artifacts in \ac{EEG} recordings
-    \item \textbf{Artifact (ARTF)}: Various technical and physiological artifacts
-    \item \textbf{Background (BCKG)}: Normal \ac{EEG} background activity
-\end{itemize}
-
-The dataset employs a standard ACNS TCP montage with 16 channels, derived from bipolar combinations of \ac{EEG} electrodes following the international 10-20 system. This montage configuration is widely used in clinical seizure analysis and provides spatial coverage across frontal, temporal, central, and occipital brain regions.
-
-\subsubsection{Data Organization and Scope}
-
-The \ac{TUEV} corpus is divided into training and evaluation sets, with 359 training files and 159 evaluation files. The distribution of events varies across categories, with artifact and background events being most prevalent, while spike and slow wave events are less frequent. This class imbalance reflects the natural distribution of \ac{EEG} events in clinical recordings, where pathological events are typically less frequent than normal background activity.
-
-Each \ac{EEG} sample is processed to extract event-centered windows, where the event of interest is positioned at the center of the temporal window. The original recordings are sampled at 250 Hz and can be resampled to other frequencies (such as 200 Hz) depending on experimental requirements. The temporal windows are extracted with configurable durations before and after the event, allowing for analysis of different temporal contexts.
-
-The dataset's characteristics align with typical clinical \ac{EEG} recording scenarios, ensuring that findings are relevant to practical biosignal processing applications. The multi-class nature of the classification task, combined with the clinical relevance of the event types, makes \ac{TUEV} an appropriate benchmark for evaluating the effectiveness of different sequence modeling architectures in biosignal analysis.
+A detailed description of the \ac{TUEV} dataset, including event class definitions, electrode configurations, and data organization, is provided in Section~\ref{sec:dataset}.
 
 
 \section{Outline}
@@ -102,9 +79,13 @@ This thesis is structured as follows:
 
 \textbf{Chapter 5: Results and Analysis} presents the experimental findings and analyzes the performance differences between \ac{xLSTM} variants and the baseline Linear Transformer. The chapter includes statistical analysis, performance comparisons across different sample lengths, and detailed examination of model behavior.
 
-\textbf{Chapter 6: Discussion} interprets the results in relation to existing literature, discusses what the findings mean for biosignal processing, and addresses the limitations of this study. This chapter also explores the practical relevance of the performance improvements and their potential use in clinical applications.
+\textbf{Chapter 6: Discussion} provides critical interpretation of the experimental findings, examining window-dependent performance patterns and architecture-specific behaviors. The chapter analyzes statistical significance limitations, addresses severe class imbalance issues that question clinical viability, and discusses the challenges of transferring architectural innovations from natural language processing to biosignal analysis. A comprehensive assessment of methodological, architectural, and dataset limitations contextualizes the modest improvements observed.
 
-\textbf{Chapter 7: Conclusion} summarizes the key findings, highlights the contributions of this work to biosignal processing, and suggests directions for future research. The chapter also reflects on the broader implications of combining modern sequence modeling architectures with specialized biosignal processing frameworks.
+\textbf{Chapter 7: Conclusion and Outlook} summarizes the key findings regarding window-dependent performance and the lack of consistent architectural superiority. The chapter presents the main contributions of this work, including comprehensive temporal characterization and transparent reporting of limitations. It discusses priorities for future research---particularly architecture-specific hyperparameter optimization, increased sample sizes, and class imbalance mitigation---and explores long-term directions for domain-specific memory mechanisms and clinical deployment considerations.
+
+\textbf{Appendix A} provides a comprehensive research questions framework, systematically addressing what the central question is, why it matters, what evidence was needed, what methods were used, and what the results tell us about biosignal processing and domain transfer. This section includes detailed discussion of the broader implications for clinical machine learning and future research directions.
+
+\textbf{Appendix B} contains supplementary material including additional metric visualizations (balanced accuracy, Cohen's kappa, and weighted F1 boxplots across all window configurations) and complete per-run performance tables for all five random seeds across all architectural variants and temporal windows, supporting the statistical analyses presented in the main text.
 
 
 

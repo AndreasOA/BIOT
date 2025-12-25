@@ -152,7 +152,7 @@
 %% 
 
 \usepackage{csquotes}
-\usepackage[backend=biber,citestyle=numeric,sortcites=true,maxcitenames=2,style=ACM-Reference-Format]{biblatex}
+\usepackage[backend=biber,citestyle=numeric,sortcites=true,maxcitenames=2,style=ACM-Reference-Format,sorting=none]{biblatex}
 \setcounter{biburlnumpenalty}{100} %% reducing biburl* penalties typically improves URL placement in bibliography
 \setcounter{biburllcpenalty}{100}
 \setcounter{biburlucpenalty}{100}
@@ -188,7 +188,7 @@
 %% 
 
 %% Command \title{title}: sets the title of your thesis
-\title{Evaluating xLSTM on BIOT}
+\title{Evaluating xLSTM for EEG Seizure Classification}
 
 %% Command \titleshort{short title}: sets an abbreviated version of the thesis title for page heads
 %\titleshort{Optional space for your abbreviated title}
@@ -330,6 +330,7 @@
 %% Include your appendix chapters
 %% 
 
+\import{./}{90-appendix}
 \import{./}{91-appendix}
 % ...
 

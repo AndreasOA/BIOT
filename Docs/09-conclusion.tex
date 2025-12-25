@@ -4,102 +4,76 @@
 \chapter{Conclusion and Outlook}
 \label{sec:conclusion}
 
-This thesis investigated the integration of \ac{xLSTM} architectures within the \ac{BIOT} framework for automated seizure classification on \ac{EEG} data. Through systematic evaluation of \ac{sLSTM}, \ac{mLSTM}, and combined variants across different temporal window configurations, this work provides empirical insights into the potential and limitations of advanced sequence modeling for biosignal processing.
+This thesis investigated the integration of \ac{xLSTM} architectures within the \ac{BIOT} framework for automated \ac{EEG} event classification. The evaluation included \ac{sLSTM}, \ac{mLSTM}, and combined variants across three temporal window configurations (5, 7, and 9 seconds), totaling 60 experimental runs (4 architectures × 3 windows × 5 random seeds) on the \ac{TUEV} dataset.
 
-\section{Summary of Key Findings}
+\section{Summary of Findings}
 
-The experimental evaluation yields several important findings that contribute to our understanding of sequence modeling in biosignal analysis:
+The experimental evaluation reveals that architectural sophistication does not directly translate to superior biosignal performance. As detailed in Section~\ref{sec:performance_analysis}, each architecture shows distinct window-length preferences rather than consistent superiority: \ac{sLSTM} demonstrates a U-shaped response with best performance at 5\,s and 9\,s windows but dips at 7\,s, while \ac{mLSTM} peaks at 7\,s but degrades at 9\,s. The Linear Transformer baseline shows continuous degradation with increasing window length.
 
-\subsection{Modest Performance Improvements}
+Despite these consistent trends, most differences fail to reach statistical significance (Section~\ref{sec:statistical_significance}). Only two comparisons achieved significance: \ac{sLSTM} improved AUCPR Macro at 5\,s windows (p=0.005) and overall accuracy at 9\,s windows (p=0.029). The primary metric, balanced accuracy, showed no significant differences across all configurations. High inter-run variance (coefficient of variation 6-10\%) combined with limited sample size (n=5) prevents definitive conclusions about architectural superiority.
 
-The \ac{sLSTM} architecture achieves the best overall performance with a balanced accuracy of $52.26\% \pm 3.44\%$ on the optimal 7-second temporal window, representing a 4.4\% relative improvement over the baseline Linear Transformer ($50.08\% \pm 4.29\%$). While this improvement is consistent across runs, it falls short of the dramatic performance gains observed with \ac{xLSTM} in natural language processing applications.
+The most critical limitation emerges from confusion matrix analysis (Section~\ref{sec:class_imbalance}): severe class imbalance renders all architectures clinically questionable. Class~0 achieves maximum recall of 14.2\%, missing approximately 85\% of minority-class instances, while Class~5 achieves 81-83\% recall, demonstrating strong majority-class bias. These findings indicate that training stability, sample size constraints, and dataset characteristics play a larger role than memory mechanism design.
 
-\subsection{Limited Statistical Significance}
+\section{Key Contributions}
 
-Despite consistent directional improvements, most performance differences do not reach statistical significance ($p > 0.05$) due to high inter-run variance and limited sample size. This finding highlights the challenge of definitively establishing architectural superiority in medical machine learning applications where effect sizes may be small relative to training stochasticity.
+This work makes several important contributions to the field:
 
-\subsection{Architecture-Specific Characteristics}
-
-Different \ac{xLSTM} variants exhibit distinct performance profiles:
 \begin{itemize}
-\item \textbf{\ac{sLSTM}:} Achieves highest peak performance but with increased variance, particularly on longer temporal windows
-\item \textbf{\ac{mLSTM}:} Provides more stable performance with lower variance across runs, suggesting better optimization characteristics
-\item \textbf{Combined architecture:} Produces identical results to \ac{mLSTM} alone, indicating implementation challenges or fundamental limitations in combining different memory mechanisms
+\item \textbf{Comprehensive window-dependent characterization:} Systematic evaluation reveals architecture-specific temporal sensitivities—\ac{sLSTM}'s U-shaped pattern, \ac{mLSTM}'s inverted-U response, and the combined architecture's stability—providing empirical guidance for temporal context selection.
+
+\item \textbf{Demonstration that training variance dominates architectural effects:} The high coefficient of variation (6-10\%) and lack of statistical significance reveal that optimization stability and random initialization have greater impact than architectural sophistication.
+
+\item \textbf{Transparent, reproducible evaluation pipeline:} This work provides an honest assessment of both achievements and limitations within the \ac{BIOT} framework~\cite{yang2023biot}, including complete reporting of negative results and methodological constraints.
 \end{itemize}
 
-\subsection{Temporal Window Sensitivity}
+\section{Limitations}
 
-All architectures show performance degradation with 9-second temporal windows, with optimal performance typically achieved at 5-7 second windows. This finding suggests computational limitations in current sequence modeling approaches rather than optimal neurophysiological context identification.
+As discussed in Section~\ref{sec:limitations}, this study faces three major constraints:
 
-\subsection{Critical Class Imbalance Issues}
+\textbf{Sample Size and Statistical Power:} Five runs per configuration provide insufficient power to detect small but potentially meaningful differences. Many observed trends might achieve significance with larger samples (20-30 runs).
 
-The confusion matrix analysis reveals severe limitations that question clinical viability: complete failure to classify any instances of Class 0 (567 samples) and strong bias toward the majority class (87.87\% accuracy on Class 5 vs. 0\% on Class 0). These patterns indicate fundamental challenges in handling imbalanced medical datasets that extend beyond architectural improvements.
+\textbf{Single-Dataset Evaluation:} Evaluation on only the \ac{TUEV} dataset limits generalizability. The specific characteristics—particularly severe class imbalance—heavily influence results. Whether observed architectural patterns generalize to other \ac{EEG} tasks remains unknown.
 
-\section{Theoretical Implications}
-
-The findings provide important insights into the applicability of advanced sequence modeling to biosignal processing:
-
-\subsection{Domain Transfer Limitations}
-
-The modest improvements observed with \ac{xLSTM} variants suggest that successful architectures from natural language processing may not directly transfer to biosignal domains. The tokenized \ac{EEG} representation processed by \ac{BIOT} appears to have different sequential characteristics than linguistic text, limiting the benefits of sophisticated memory mechanisms.
-
-\subsection{Task Complexity Considerations}
-
-Seizure classification on the \ac{TUEV} dataset \cite{obeid2016temple} may represent a pattern recognition problem where local spatiotemporal features are more important than complex long-range dependencies. The enhanced memory capabilities of \ac{xLSTM} may be unnecessary for tasks that can be solved through simpler temporal pattern recognition.
-
-\subsection{Training Dynamics Dominance}
-
-The high variance across runs (coefficient of variation 6-10\%) indicates that training dynamics, random initialization, and optimization challenges have a more significant impact on performance than architectural sophistication. This suggests that improving training procedures and addressing optimization challenges may yield greater benefits than architectural innovations.
-
-\section{Clinical Implications and Limitations}
-
-The findings have important implications for the development of clinical decision support systems:
-
-\subsection{Limited Clinical Readiness}
-
-The complete failure to classify Class 0 and strong majority class bias indicate that current approaches are not ready for clinical deployment. Medical applications require reliable performance across all relevant categories, particularly rare but clinically significant events.
-
-\subsection{Statistical Power Requirements}
-
-The lack of statistical significance despite consistent improvements highlights the need for larger-scale evaluation studies in medical machine learning. Clinical validation requires robust statistical evidence that is difficult to achieve with small sample sizes typical in computational constraints.
-
-\subsection{Performance Expectations}
-
-The modest improvements observed (2-4 percentage points in balanced accuracy) may not represent clinically meaningful differences given the confidence intervals and variance observed. This finding suggests the need for more realistic expectations regarding the potential impact of architectural innovations in medical applications.
+\textbf{Shared Hyperparameters:} Using hyperparameters optimized for the baseline across all variants may substantially underestimate \ac{xLSTM} potential. Whether the modest gains reflect fundamental limitations or simply suboptimal hyperparameter choices remains an open question.
 
 \section{Future Research Directions}
+\label{sec:future_research}
 
-Based on the limitations and findings identified, several critical research directions emerge:
+\subsection{Priorities}
 
-\subsection{Methodological Improvements}
+\textbf{Architecture-specific hyperparameter optimization:} Systematic tuning for each \ac{xLSTM} variant is the most critical next step. A comprehensive search should explore dropout rates (0.1-0.4), number of blocks (4-16), combined architecture ratios (beyond the 7:1 configuration), embedding dimensions (128-512), and learning rate schedules. This would clarify whether modest improvements reflect true architectural limitations or suboptimal configurations. Given the window-dependent patterns observed, optimization may need to be performed separately for each window length.
 
-\textbf{Large-Scale Evaluation:} Future studies should include multiple datasets, significantly more experimental runs, and cross-dataset validation to enable robust statistical analysis and generalizability assessment.
+\textbf{Increased sample sizes:} Expanding from 5 to 20-30 runs per configuration would dramatically improve statistical power and enable detection of smaller but clinically meaningful differences. With observed variance levels, many non-significant trends would likely achieve significance with larger samples. This is particularly critical for medical applications where regulatory approval requires robust statistical evidence. Ensemble approaches combining multiple runs could also reduce deployment variance and improve reliability.
 
-\textbf{Class Imbalance Solutions:} Developing specialized approaches for severely imbalanced medical datasets, including novel loss functions, sampling strategies, and architectures designed specifically for rare event detection.
+\textbf{Cross-dataset validation:} Evaluation should extend to diverse \ac{EEG} datasets spanning different tasks (sleep staging, seizure detection, motor imagery), recording conditions (clinical vs. ambulatory), and populations (pediatric, adult, elderly). This would establish whether window-dependent patterns represent fundamental architectural characteristics or dataset-specific artifacts. Datasets with different class distributions would help separate architectural effects from imbalance-related issues.
 
-\textbf{Clinical Validation Framework:} Moving beyond accuracy metrics to evaluate clinical impact, including cost-benefit analysis of different error types and integration with clinical workflows.
+\subsection{Methodological Advances}
 
-\subsection{Architectural Innovation}
+\textbf{Class imbalance mitigation:} The complete failure on minority classes demands targeted solutions beyond architectural modifications. Future work should systematically evaluate focal loss~\cite{lin2017focal}, cost-sensitive learning~\cite{cui2019class}, oversampling strategies (SMOTE~\cite{chawla2002smote}, ADASYN~\cite{he2008adasyn}), class-balanced batching, and two-stage training approaches. These strategies address fundamental data challenges that architectural improvements alone cannot overcome.
 
-\textbf{Domain-Specific Design:} Rather than adapting architectures from other domains, developing sequence models specifically designed for biomedical temporal patterns and their unique characteristics, including their typically shorter-range dependencies and different noise characteristics.
+\textbf{Variance reduction techniques:} The high inter-run variance limits deployment reliability. Advanced initialization strategies~\cite{glorot2010understanding,he2015delving}, Stochastic Weight Averaging~\cite{izmailov2018averaging}, gradient clipping~\cite{pascanu2013difficulty}, and multiple checkpoint ensembles could stabilize training and improve generalization. Different memory mechanisms may benefit from different optimization strategies—for example, \ac{mLSTM}'s matrix memory might need different learning rate schedules than \ac{sLSTM}'s scalar gates.
 
-\textbf{Interpretability Integration:} Incorporating interpretability mechanisms to enable clinical validation and understanding of failure modes, particularly for understanding systematic misclassifications like the complete Class 0 failure.
+\textbf{Finer-grained window exploration:} Testing intermediate windows (6, 8 seconds) and a broader range (3-12 seconds) would more precisely characterize the U-shaped and inverted-U patterns. This could reveal whether certain architectures benefit from very short (2-3 seconds) or very long (12-15 seconds) contexts not evaluated here, and whether the patterns represent continuous curves or artifacts of the specific test points.
 
-\textbf{Multi-Modal Approaches:} Exploring architectures that can effectively integrate \ac{EEG} with other clinical data sources to improve diagnostic accuracy and robustness.
+\subsection{Long-Term Directions}
 
-\subsection{Training and Optimization}
+\textbf{Domain-specific memory mechanisms:} Rather than directly applying \ac{xLSTM} from language modeling, future work could develop memory mechanisms specifically designed for biosignal characteristics. \ac{EEG} exhibits different temporal dynamics than text—periodic oscillations, transient events, and spatially correlated channels. Custom gating mechanisms or memory structures could be more effective. For example, frequency-aware memory cells that explicitly model oscillatory patterns or multi-scale memory with separate mechanisms for fast transients versus slow trends.
 
-\textbf{Variance Reduction:} Investigating methods to reduce training variance through improved initialization strategies, regularization techniques, and ensemble approaches.
+\textbf{Hybrid and adaptive architectures:} The complementary window-length sensitivities suggest potential for dynamic architectures that adaptively select or blend memory mechanisms based on sequence characteristics. Gating mechanisms that route information through \ac{sLSTM} versus \ac{mLSTM} pathways depending on local pattern characteristics could combine their strengths more effectively than fixed combinations.
 
-\textbf{Specialized Optimization:} Developing optimization procedures specifically designed for medical datasets with class imbalance and high-stakes error consequences.
+\textbf{Clinical deployment considerations:} Real-time clinical monitoring requires low-latency inference, model compression~\cite{han2015deep} (pruning, quantization). Multi-modal biosignal integration (\ac{EEG}, \ac{ECG}, \ac{EMG}) could provide richer context. Interpretability features—attention visualization, memory inspection, prototype-based approaches—would enable clinical validation and identify failure modes more effectively than blind parameter tuning.
 
-\section{Final Conclusions}
+Ultimately, bridging the gap between model sophistication and clinical relevance requires focusing on stability, transparency, and bias mitigation rather than marginal accuracy improvements. The path forward demands comprehensive methodology combining larger-scale evaluation, architecture-specific optimization, cross-dataset validation, and targeted solutions for fundamental data challenges.
 
-This thesis demonstrates that while \ac{xLSTM} architectures can provide modest improvements in automated seizure classification, the benefits are limited compared to their success in other domains. The findings emphasize the importance of domain-specific considerations in architecture design and highlight fundamental challenges in medical machine learning that extend beyond architectural sophistication.
+\section{Final Reflection}
 
-The work contributes to a more realistic understanding of the potential and limitations of advanced sequence modeling in biosignal processing, providing a foundation for future research that addresses the specific challenges of medical applications rather than simply adapting successful approaches from other domains.
+This thesis demonstrates that reliable \ac{EEG}-based event classification depends less on architectural novelty than on rigorous methodology and clinical realism. While \ac{xLSTM} mechanisms provide new tools for temporal modeling, their value in biosignal processing emerges only when combined with domain-specific design, robust evaluation, and careful attention to medical relevance.
 
-The critical finding regarding class imbalance and the lack of statistical significance in most comparisons serve as important reminders that incremental architectural improvements alone may be insufficient to address the complex challenges of clinical decision support systems. Future progress will likely require holistic approaches that address data quality, training procedures, evaluation methodology, and clinical integration simultaneously.
+As discussed in Section~\ref{sec:discussion_summary}, the window-dependent performance patterns suggest no single architecture dominates across all temporal scales. The lack of statistical significance despite consistent trends reveals that training dynamics have greater impact than architectural sophistication. Most critically, severe class imbalance demonstrates that architectural improvements alone cannot overcome fundamental data challenges.
+
+By providing transparent reporting of both achievements and limitations—including negative results, sample size constraints, and potential hyperparameter biases—this work establishes a realistic foundation for future research. The modest improvements observed should not discourage further investigation, but rather guide it toward more comprehensive methodological approaches that can definitively establish the value (or limitations) of advanced sequence modeling in biosignal processing.
+
+The ultimate measure of success in medical machine learning is not marginal performance gains on benchmark metrics, but reliable, interpretable, and clinically actionable predictions. This thesis provides the empirical foundation and methodological framework for pursuing that goal.
 
 %% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

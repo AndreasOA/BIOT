@@ -65,18 +65,18 @@ Each variant is evaluated under identical training conditions and data processin
 \subsection{Background and Motivation}
 \label{sec:dataset_background}
 
-Clinical \ac{EEG} data represents an invaluable but underutilized resource for machine learning research. While hundreds of thousands of \ac{EEG} recordings are collected annually in hospitals worldwide, relatively few are available to the research community in formats suitable for algorithm development \cite{obeid2016temple}. This scarcity is particularly problematic given that modern deep learning approaches require massive amounts of diverse training data to achieve robust performance.
+Clinical \ac{EEG} data represents a valuable yet still underexploited resource for machine learning research. Although large volumes of \ac{EEG} are recorded in hospitals worldwide, comparatively few datasets are available in forms suitable for algorithm development \cite{obeid2016temple}. This scarcity poses challenges, as modern deep learning approaches typically benefit from large and diverse datasets to achieve robust performance.
 
-The \ac{TUH} \ac{EEG} Corpus was developed to address this gap, providing the research community with access to large-scale clinical \ac{EEG} data. The complete \ac{TUH} corpus comprises 16,986 sessions from 10,874 unique subjects collected between 2002 and the present, representing approximately 29.1 years of cumulative \ac{EEG} data \cite{obeid2016temple}. Importantly, this is clinical-grade data collected in real-world hospital settings including the \ac{ICU}, epilepsy monitoring unit, emergency room, and outpatient services, rather than tightly controlled laboratory conditions.
+The \ac{TUH} \ac{EEG} Corpus was established to address this limitation by providing a large-scale clinical \ac{EEG} database to the research community. It comprises 16,986 sessions from 10,874 subjects collected between 2002 and the present, corresponding to approximately 29.1 years of cumulative recording time \cite{obeid2016temple}. The corpus contains clinical-grade \ac{EEG} recorded across multiple hospital environments, including intensive care units, epilepsy monitoring units, emergency departments, and outpatient services.
 
-The \ac{TUEV} subset was created specifically for event classification tasks and contains sessions known to include clinically significant events such as epileptiform discharges, artifacts, and eye movements \cite{harati2015improved}. This focused subset enables targeted development and evaluation of algorithms for automatic event detection and classification, a critical capability for assisting neurologists in analyzing long-term \ac{EEG} recordings.
+The \ac{TUEV} subset was created specifically to support research on \ac{EEG} event classification and includes sessions annotated for clinically meaningful events such as epileptiform discharges, in addition to artifacts and eye movements \cite{harati2015improved}. This makes the dataset particularly suitable for developing and evaluating automated event detection and classification systems, which may support neurologists in analyzing long-term \ac{EEG} recordings.
 
 \subsection{Dataset Structure and Organization}
 \label{sec:dataset_structure}
 
-The \ac{TUEV} dataset is organized into two primary partitions: a training set for model development and an evaluation set for independent testing. The training set contains 359 \ac{EEG} files, while the evaluation set comprises 159 files. This separation ensures that models can be evaluated on data from sessions not seen during training.
+The \ac{TUEV} dataset is organized into distinct training and evaluation partitions, consisting of 359 and 159 \ac{EEG} files respectively. This separation ensures that model evaluation is conducted on sessions that are independent from those used during training.
 
-Signal data is stored in the \ac{EDF}, an open-source format that encodes multi-channel time-series data using 16-bit integers. Each \ac{EDF} file contains both the raw \ac{EEG} signals and associated metadata in an ASCII header describing channel labels, sampling rates, and recording parameters. The signal data represents pruned recordings where sections marked as uninformative by attending technicians were removed, resulting in focused segments containing relevant neural activity.
+Signal data is stored in the \ac{EDF}, an open-source format that encodes multi-channel time-series data using 16-bit integers. Each \ac{EDF} file contains both the raw \ac{EEG} signals and associated metadata in an ASCII header describing channel labels, sampling rates, and recording parameters. The recordings represent pruned clinical \ac{EEG} segments in which sections marked as uninformative by technicians were removed, yielding focused intervals that predominantly contain clinically reviewed activity.
 
 The file organization follows a hierarchical structure that preserves relationships between recordings. For the evaluation set, files are organized by session index (e.g., \texttt{eval/032/bckg\_032\_a\_.edf}), where multiple files may represent segments from the same recording session. For the training set, files are indexed by patient identifier (e.g., \texttt{train/00002275/00002275\_00000001.edf}), allowing sessions from the same patient to be identified and grouped appropriately during data partitioning.
 
@@ -108,7 +108,7 @@ Event annotations are provided in two complementary formats. The \texttt{.rec} f
 \subsection{Class Distribution and Imbalance}
 \label{sec:class_distribution}
 
-The distribution of events varies significantly across the training and evaluation sets, reflecting the natural distribution of events in clinical practice. In the training set, artifact events are most prevalent (164 files), followed by background (211 files), while clinical events like \ac{SPSW} are less common (27 files). The evaluation set shows similar patterns with artifacts in 46 files and \ac{SPSW} in only 9 files.
+The distribution of events varies significantly across the training and evaluation sets, reflecting the natural distribution of events in clinical practice. In the training set, background activity is present in the largest number of files (211 files), whereas clinically relevant events such as \ac{SPSW} appear in comparatively fewer files (27 files). These numbers refer to files containing at least one instance of the corresponding event type rather than individual event counts. The evaluation set shows similar patterns with artifacts in 46 files and \ac{SPSW} in only 9 files.
 
 This class imbalance presents a significant challenge for machine learning algorithms, which tend to bias predictions toward majority classes. The imbalance necessitates:
 \begin{itemize}
@@ -130,7 +130,7 @@ Understanding the electrode configuration and channel labeling system is crucial
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/eeg_10_20_system.jpg}
-    \caption{International 10-20 electrode system showing the standardized placement of electrodes on the scalp. The system uses anatomical landmarks (nasion, inion, and preauricular points) to ensure consistent electrode positioning across subjects.}
+    \caption{International 10-20 electrode system showing the standardized placement of electrodes on the scalp (adapted from~\cite{ferrell2022electrode}). The system uses anatomical landmarks (nasion, inion, and preauricular points) to ensure consistent electrode positioning across subjects.}
     \label{fig:10_20_system}
 \end{figure}
 
@@ -152,8 +152,8 @@ While the raw \ac{EEG} data is recorded using unipolar montages with a common re
 \begin{itemize}
     \item \textbf{Local Feature Enhancement}: Bipolar derivations accentuate local neural activity by measuring potential differences between nearby electrodes
     \item \textbf{Common-Mode Artifact Rejection}: Artifacts affecting large scalp regions simultaneously are reduced through differential measurement
-    \item \textbf{Clinical Consistency}: Bipolar montages match the representation neurologists use for visual analysis, facilitating clinical validation
-    \item \textbf{Spatial Localization}: Local voltage gradients provide better spatial resolution for identifying event origins
+    \item \textbf{Clinical Consistency}: Bipolar montages closely align with representations commonly used by neurologists for visual analysis, facilitating clinical validation
+    \item \textbf{Spatial Localization}: Local voltage gradients can improve spatial discrimination of event origins compared to purely reference-based recordings
 \end{itemize}
 
 The preprocessing pipeline converts unipolar recordings to a standard \ac{TCP} bipolar montage, also known as the double-banana montage due to its characteristic visualization pattern (see Figure~\ref{fig:tcp_montage}). The \ac{TCP} montage creates 22 channels by computing differences between adjacent electrodes along electrode chains.
@@ -161,7 +161,7 @@ The preprocessing pipeline converts unipolar recordings to a standard \ac{TCP} b
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.7\textwidth]{images/tcp_montage.jpg}
-    \caption{Temporal Central Parasagittal (TCP) montage showing the electrode chains used for bipolar derivations. The longitudinal chains traverse from front to back through temporal regions, while parasagittal chains pass near the midline. This montage is commonly referred to as the ``double-banana'' configuration.}
+    \caption{Temporal Central Parasagittal (TCP) montage showing the electrode chains used for bipolar derivations (adapted from~\cite{ferrell2022electrode}). The longitudinal chains traverse from front to back through temporal regions, while parasagittal chains pass near the midline. This montage is commonly referred to as the ``double-banana'' configuration.}
     \label{fig:tcp_montage}
 \end{figure}
 
@@ -246,7 +246,6 @@ Critically, the validation split is performed at the subject level rather than t
 \textbf{Reproducibility Requirements:} To enable reproducible research and facilitate comparison with future work:
 \begin{itemize}
     \item Fixed random seeds are applied consistently across all random number generators
-    \item Deterministic algorithms are enabled where computational efficiency allows
     \item Data loading order is standardized through sorted file lists
     \item Subject-level splitting uses fixed random states for consistency
 \end{itemize}
@@ -286,12 +285,12 @@ where $p_o$ is observed agreement (accuracy) and $p_e$ is expected agreement und
 p_e = \sum_{i=1}^{K} \frac{(TP_i + FP_i)(TP_i + FN_i)}{n_{total}^2}
 \end{equation}
 
-\textbf{AUC-PR Macro} focuses on positive class performance through precision-recall curves, particularly important for rare clinical events:
+\textbf{AUC-PR Macro} evaluates performance using precision-recall curves, which are particularly informative for imbalanced datasets because they emphasize performance on the positive (rare) class. For each class, a one-vs-rest precision-recall curve is computed, its area under the curve is obtained, and the results are averaged across classes:
 \begin{equation}
-\text{AUC-PR}_{macro} = \frac{1}{K} \sum_{i=1}^{K} \int_0^1 Precision_i(Recall_i) \, dRecall_i
+\text{AUC-PR}_{macro} = \frac{1}{K} \sum_{i=1}^{K} \int Precision_i(Recall_i) \, dRecall_i
 \end{equation}
 
-One-vs-rest precision-recall curves are computed for each class and then macro-averaged.
+Macro-averaging ensures that each class contributes equally to the final score, regardless of its frequency.
 
 \textbf{Overall Accuracy} provides intuitive performance understanding:
 \begin{equation}
@@ -307,7 +306,7 @@ This standard classification metric enables direct comparison with published lit
 
 \textbf{Checkpointing Strategy:} Two distinct checkpointing strategies are employed to capture different aspects of model performance. The first strategy monitors validation cross-entropy loss, saving the model whenever the loss decreases to a new minimum. This captures best probabilistic calibration. The second strategy tracks validation balanced accuracy, preserving the model whenever accuracy increases to a new maximum. This captures best classification performance. The dual approach enables analysis of the trade-off between loss minimization and classification accuracy.
 
-\textbf{Confusion Matrix Analysis:} For each trained model, a confusion matrix is computed on the test set to provide detailed insight into classification patterns. The confusion matrix reveals which event classes are most frequently confused, enabling identification of systematic misclassification patterns. This is particularly valuable for understanding model behavior on clinically similar events (e.g., distinguishing epileptiform activity from artifacts).
+\textbf{Confusion Matrix Analysis:} For each trained model, a confusion matrix is computed on the test set to provide detailed insight into classification patterns. The confusion matrix reveals which event classes are most frequently confused, enabling identification of systematic misclassification patterns. This is valuable for understanding model behavior on clinically similar events (e.g., distinguishing epileptiform activity from artifacts).
 
 \textbf{Final Assessment:} After training completion, both checkpoint variants (loss-based and accuracy-based) are evaluated on the held-out test set. All five metrics are computed to provide comprehensive performance characterization.
 
@@ -340,7 +339,7 @@ t = \frac{\bar{D}}{s_D / \sqrt{n}}
 \end{equation}
 where $\bar{D} = \frac{1}{n}\sum_{i=1}^{n}(X_i - Y_i)$ is the mean difference and $s_D$ is the standard deviation of differences. The paired design accounts for correlations across seeds due to shared data splits and training procedures. The t-test assumes that differences are approximately normally distributed, which is reasonable for aggregated metrics across multiple seeds.
 
-\textbf{Wilcoxon Signed-Rank Test:} As a non-parametric alternative to the paired t-test, the Wilcoxon signed-rank test does not assume normality of the difference distribution. The test ranks the absolute differences $|X_i - Y_i|$ and assigns signs based on whether $X_i > Y_i$ or $X_i < Y_i$. The test statistic $W$ is the sum of ranks for positive differences. This test is more robust to outliers and violations of normality assumptions, providing complementary evidence to the t-test. When both tests agree on significance, this strengthens confidence in the conclusion.
+\textbf{Wilcoxon Signed-Rank Test:} As a non-parametric alternative to the paired t-test, the Wilcoxon signed-rank test does not assume normality of the difference distribution. However, it does assume that the distribution of paired differences is symmetric around the median. The test ranks the absolute differences $|X_i - Y_i|$ and assigns signs based on whether $X_i > Y_i$ or $X_i < Y_i$. The test statistic $W$ is the sum of ranks for positive differences. This test is more robust to outliers and violations of normality assumptions, providing complementary evidence to the t-test. When both tests agree on significance, this strengthens confidence in the conclusion.
 
 \textbf{Significance Levels:} Statistical significance is assessed at the conventional $\alpha = 0.05$ level. Results with $p < 0.05$ indicate strong evidence against the null hypothesis of no difference, while $p < 0.01$ indicates very strong evidence. Both tests are applied to each performance metric, enabling cross-validation of statistical conclusions and robust assessment of architectural differences.
 

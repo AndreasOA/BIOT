@@ -12,54 +12,52 @@ Biosignal processing is a central challenge in biomedical engineering. The main 
 
 \subsection{Challenges in Biosignal Processing}
 
-Biosignals, such as \ac{EEG} and \ac{ECG}, are multi-channel time series recorded at high sampling rates in various healthcare domains. These signals show several characteristics that make automated analysis challenging:
+Biosignals, such as \ac{EEG} and \ac{ECG}, are multi-channel time series recorded at high sampling rates in various healthcare domains. Automated analysis of these signals faces multiple interconnected challenges.
 
-\begin{itemize}
-    \item \textbf{Format Heterogeneity}: Different datasets use different channel configurations, sampling rates, and recording durations \cite{yang2023biot}. For example, seizure detection datasets may use 16 channels at 256 Hz for 10-second recordings, while sleep analysis datasets often use different montages and sampling frequencies.
-    
-    \item \textbf{Missing Data}: Real-world recordings often have missing channels or corrupted segments \cite{banville2022robust}. This happens because of electrode displacement, amplifier saturation, or recording interruptions.
-    
-    \item \textbf{Variable Length}: Clinical recordings vary in duration depending on the application and clinical protocol \cite{yang2023biot}. This makes it difficult to use models that expect fixed input dimensions.
-    
-    \item \textbf{Cross-Dataset Generalization}: Models trained on one dataset often fail to generalize to data from different institutions, recording systems, or patient populations due to domain shift \cite{yang2023biot}.
-\end{itemize}
+\textbf{Domain Shift and Generalization:} Machine learning models trained on biosignal data from one clinical site frequently exhibit poor performance when applied to recordings from different institutions~\cite{yang2023biot}. This cross-dataset generalization problem stems from systematic differences in recording equipment, clinical protocols, and patient populations. \ac{BIOT} demonstrates that conventional deep learning approaches typically require extensive retraining when applied to new data sources~\cite{yang2023biot}.
+
+\textbf{Recording Duration Variability:} Clinical practice produces biosignal recordings of widely varying lengths. Diagnostic \ac{EEG} sessions may span 20-60 minutes, while ambulatory monitoring can extend over multiple days. Traditional neural network architectures designed for fixed-size inputs struggle to accommodate this temporal variability without extensive padding or truncation, which can distort the underlying signal characteristics.
+
+\textbf{Incomplete and Corrupted Data:} Real-world clinical recordings frequently contain missing channels due to electrode displacement, amplifier saturation, or deliberate protocol changes~\cite{banville2022robust}. Individual time segments may be corrupted by patient movement, environmental interference, or equipment malfunction. Conventional approaches require imputation or data exclusion, potentially introducing artifacts or reducing statistical power.
+
+\textbf{Heterogeneous Format Specifications:} As emphasized in the \ac{BIOT} framework~\cite{yang2023biot}, biosignal datasets exhibit substantial format diversity. Seizure detection studies might employ 16-channel bipolar montages sampled at 256~Hz, while sleep staging research commonly uses different electrode configurations and sampling frequencies. Channel naming conventions, reference schemes, and signal scaling practices vary across recording systems, complicating cross-dataset model development.
 
 \subsection{BIOT: Biosignal Transformer Architecture}
 
-The \acf{BIOT} architecture was developed to address these challenges \cite{yang2023biot}. It introduces a unified framework that can handle different biosignal formats. \ac{BIOT} is inspired by the Vision Transformer (ViT) \cite{dosovitskiy2021vit} and Audio Spectrogram Transformer (AST) \cite{gong2021ast}, and adapts their tokenization concept to biosignal data.
+The \acf{BIOT} architecture was developed to address these challenges through a unified framework capable of handling heterogeneous biosignal formats~\cite{yang2023biot}. Drawing inspiration from the Vision Transformer (ViT)~\cite{dosovitskiy2021vit} and Audio Spectrogram Transformer (AST)~\cite{gong2021ast}, \ac{BIOT} adapts the concept of tokenization, originally developed for images and audio, to biosignal data.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{images/biot_extracted_images/page_3_img-0.jpeg}
 \caption{
-    BIOT Architecture Overview. Upper: Biosignal tokenization module transforms heterogeneous biosignals into unified "sentences", followed by linear transformer processing. Lower: BIOT's versatility across different learning scenarios including supervised learning, missing data handling, and pre-training approaches. \cite{yang2023biot}
+    BIOT Architecture Overview (adapted from~\cite{yang2023biot}). Upper: Biosignal tokenization module transforms heterogeneous biosignals into unified "sentences", followed by linear transformer processing. Lower: BIOT's versatility across different learning scenarios including supervised learning, missing data handling, and pre-training approaches.
 }\label{fig:biot_architecture}
 \end{figure}
 
 \subsubsection{Biosignal Tokenization Module}
 
-The main innovation of \ac{BIOT} is its biosignal tokenization approach. It transforms arbitrary biosignals into consistent "sentence" structures through several key steps:
+A central design element of \ac{BIOT} is the concept of ``biosignal tokenization''~\cite{yang2023biot}. This approach transforms heterogeneous biosignals into unified ``sentence'' structures, enabling consistent processing across diverse recording formats:
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{images/biot_extracted_images/page_4_img-1.jpeg}
 \caption{
-    Biosignal Tokenization Process. Sample 1 demonstrates standard tokenization with four channels (Fp1, Fp2, O1, O2) over 5 seconds. Sample 2 illustrates BIOT's flexibility with mismatched channels (missing O2), variable lengths, and missing values in O1. Different colors represent different channels, and the orange area shows spatial-temporal relationships between tokens. \cite{yang2023biot}
+    Biosignal Tokenization Process (adapted from~\cite{yang2023biot}). Sample 1 demonstrates standard tokenization with four channels (Fp1, Fp2, O1, O2) over 5 seconds. Sample 2 illustrates BIOT's flexibility with mismatched channels (missing O2), variable lengths, and missing values in O1. Different colors represent different channels, and the orange area shows spatial, temporal relationships between tokens.
 }\label{fig:biot_tokenization}
 \end{figure}
 
 \paragraph{Resampling and Normalization}
-All biosignal data is first resampled to a common sampling rate (typically 200 Hz for \ac{EEG} applications) using linear interpolation \cite{yang2023biot}. This rate selection follows the Nyquist-Shannon sampling theorem, ensuring adequate capture of frequencies up to 100 Hz, which covers the clinically relevant \ac{EEG} frequency bands. The resampling step is critical for enabling cross-dataset learning, as different recording systems may use sampling rates ranging from 125 Hz to 512 Hz.
+Let $\mathbf{S} \in \mathbb{R}^{I \times J}$ denote a biosignal sample where $I$ denotes the number of channels and $J$ represents the temporal length in samples. The \ac{BIOT} preprocessing pipeline begins with resampling all channels to a standardized sampling rate~\cite{yang2023biot}. For \ac{EEG} applications, \ac{BIOT} employs 200~Hz, justified by the Nyquist-Shannon sampling theorem~\cite{Nyquist1928,Shannon1949} as sufficient for capturing frequencies up to 100~Hz, thereby covering clinically relevant \ac{EEG} bands~\cite{yang2023biot}.
 
-Following resampling, each channel is independently normalized using the 95th percentile of absolute amplitude values \cite{yang2023biot}:
+Following resampling, \ac{BIOT} applies channel-wise normalization using the 95th percentile of absolute amplitude values~\cite{yang2023biot}:
 $$\mathbf{S}_{norm}[i] = \frac{\mathbf{S}[i]}{\text{percentile}_{95}(|\mathbf{S}[i]|)}$$
 
-This percentile-based approach provides robustness to outliers and extreme voltage spikes (common artifacts in \ac{EEG} recordings) while preserving the relative amplitude relationships within each channel. Unlike z-score normalization, it does not assume Gaussian distributions and maintains the temporal dynamics of the signal.
+This percentile-based strategy provides robustness against extreme amplitude artifacts while preserving relative amplitude relationships~\cite{yang2023biot}.
 
 \paragraph{STFT-based Tokenization}
-The core innovation of \ac{BIOT}'s tokenization is the transformation from time-domain samples to frequency-domain tokens. Unlike previous approaches that segment raw time-series data, \ac{BIOT} applies the \acf{STFT} to convert temporal segments into spectral representations \cite{yang2023biot}.
+Rather than segmenting raw time-series data directly, the \ac{BIOT} framework applies the \acf{STFT} to transform temporal windows into frequency-domain representations~\cite{yang2023biot}. This spectral tokenization represents the core methodological innovation of \ac{BIOT}.
 
-For a biosignal sample $\mathbf{S} \in \mathbb{R}^{I \times J}$ where $I$ denotes the number of channels and $J$ represents the temporal length in samples, the tokenization proceeds as follows:
+The tokenization proceeds as follows:
 
 \textbf{Step 1 - Channel-wise Processing:} Each channel is processed independently. For channel $i$, the \ac{STFT} is applied with parameters:
 \begin{itemize}
@@ -81,21 +79,21 @@ $$T = \left\lfloor \frac{1000 - 200}{100} \right\rfloor + 1 = 9 \text{ tokens pe
 
 With 16 channels, this yields $16 \times 9 = 144$ total tokens. This dramatic reduction from 1000 time-domain samples to 144 frequency-domain tokens makes the representation tractable for sequence models while preserving essential spectral information.
 
-\textbf{Advantages of Channel-wise Processing:} Unlike previous approaches that segment all channels simultaneously, \ac{BIOT}'s independent channel processing provides several benefits \cite{yang2023biot}:
+\textbf{Advantages of Channel-wise Processing:} Independent channel processing in \ac{BIOT} provides several advantages over approaches that segment all channels simultaneously~\cite{yang2023biot}:
 \begin{itemize}
-    \item \textbf{Missing Channel Robustness:} Absent channels are simply omitted from the sequence without requiring imputation or padding
-    \item \textbf{Variable Length Handling:} Different channels can have different temporal extents (e.g., due to recording interruptions) without structural conflicts
-    \item \textbf{Corrupted Segment Handling:} Individual tokens containing artifacts can be dropped without affecting neighboring channels
+    \item \textbf{Missing Channel Robustness:} Absent channels can simply be omitted from the token sequence without requiring imputation or padding~\cite{yang2023biot}
+    \item \textbf{Variable Length Handling:} Different channels can have different temporal extents without creating structural conflicts~\cite{yang2023biot}
+    \item \textbf{Corrupted Segment Handling:} Individual tokens containing artifacts can be dropped without affecting neighboring channels~\cite{yang2023biot}
 \end{itemize}
 
 \paragraph{Token Embedding}
-Each frequency-domain token must be transformed into a fixed-dimensional embedding suitable for sequence model processing. \ac{BIOT} achieves this through three complementary embedding components that capture spectral content, spatial location, and temporal order (see Figure~\ref{fig:biot_tokenization}).
+Each frequency-domain token must be transformed into a fixed-dimensional embedding suitable for sequence processing. \ac{BIOT} achieves this through three complementary embedding components that capture spectral content, spatial location, and temporal order (see Figure~\ref{fig:biot_tokenization}).
 
 \textbf{1. Segment Embedding - Frequency Content Representation}
 
 The \ac{STFT} output for each token is a frequency spectrum vector $\mathbf{f} \in \mathbb{R}^{F}$ where $F = N/2 + 1$ (e.g., 101 frequency bins for $N=200$). This vector represents the magnitude of each frequency component from 0 Hz to the Nyquist frequency (100 Hz at 200 Hz sampling rate).
 
-The \texttt{PatchFrequencyEmbedding} module projects this frequency vector into a higher-dimensional embedding space through a learned linear transformation:
+The \texttt{PatchFrequencyEmbedding} module projects the frequency vector $\mathbf{f}$ into a higher-dimensional embedding $\mathbf{e}_{segment} \in \mathbb{R}^{d}$ through a learned linear transformation:
 $$\mathbf{e}_{segment} = \mathbf{W}_{freq} \mathbf{f} + \mathbf{b}_{freq}$$
 where $\mathbf{W}_{freq} \in \mathbb{R}^{d \times F}$ and $\mathbf{b}_{freq} \in \mathbb{R}^{d}$ are learnable parameters, and $d$ is the embedding dimension (typically 256).
 
@@ -123,7 +121,7 @@ The learnable nature of channel embeddings enables the model to:
 
 \textbf{3. Positional Embedding - Temporal Order Preservation}
 
-Within each channel, the temporal order of tokens is critical. A spike occurring before a slow wave has different clinical significance than the reverse order. \ac{BIOT} employs sinusoidal positional encodings \cite{vaswani2017attention} that do not require learned parameters:
+Within each channel, the temporal order of tokens is critical. A spike occurring before a slow wave has different clinical significance than the reverse order. \ac{BIOT} employs sinusoidal positional encodings~\cite{vaswani2017attention} that do not require learned parameters:
 
 \begin{align}
 \text{PE}(pos, 2j) &= \sin\left(\frac{pos}{10000^{2j/d}}\right) \\
@@ -144,13 +142,13 @@ $$\mathbf{e}_{token}^{(i,t)} = \mathbf{e}_{segment}^{(i,t)} + \mathbf{e}_{channe
 
 where $i$ indexes the channel and $t$ indexes the temporal position.
 
-After embedding, dropout is applied for regularization, yielding the final token representation ready for sequence model processing \cite{yang2023biot}.
+After embedding, dropout is applied for regularization, yielding the final token representation ready for sequence model processing~\cite{yang2023biot}.
 
 \subsubsection{Token Sequence Formation}
 
 After embedding, tokens from all channels are concatenated (flattened) to form a single unified sequence. For a sample with $I$ channels and $T$ tokens per channel, the resulting sequence has length $N = I \times T$. For example, a 16-channel \ac{EEG} segment producing 9 tokens per channel yields a 144-token sequence.
 
-This flattening strategy treats the biosignal as a "sentence" where each token is a "word" \cite{yang2023biot}.
+This flattening strategy treats the biosignal as a "sentence" where each token is a "word"~\cite{yang2023biot}.
 
 \subsubsection{Sequence Aggregation}
 
@@ -159,26 +157,26 @@ After processing the token sequence through encoder blocks (Linear Transformer o
 To obtain a fixed-dimensional representation for the entire sample, \ac{BIOT} employs mean pooling:
 $$\mathbf{z} = \frac{1}{N} \sum_{n=1}^{N} \mathbf{H}[n]$$
 
-The [CLS] token approach (prepending a special classification token, as used in BERT) was evaluated but found less effective for biosignals \cite{yang2023biot}. This may be because biosignal patterns are distributed across the entire sequence rather than concentrated at specific positions, making global averaging more appropriate than single-token representations.
+Empirical evaluation showed that the [CLS] token approach (prepending a special classification token, as used in BERT) proved less effective for biosignals~\cite{yang2023biot}. This is attributed to biosignal patterns being distributed across the entire sequence rather than concentrated at specific positions, making global averaging more suitable than single-token representations~\cite{yang2023biot}.
 
-The aggregated representation $\mathbf{z} \in \mathbb{R}^{d}$ is then passed to a classification head consisting of an \ac{ELU} activation and linear layer for final predictions \cite{yang2023biot}.
+The aggregated representation $\mathbf{z} \in \mathbb{R}^{d}$ is then passed to a classification head consisting of an \ac{ELU} activation and linear layer for final predictions~\cite{yang2023biot}.
 
 \subsubsection{Applications and Capabilities}
 
-\ac{BIOT} supports multiple learning paradigms:
+The \ac{BIOT} framework supports multiple learning paradigms~\cite{yang2023biot}:
 
 \begin{itemize}
-    \item \textbf{Supervised Learning}: Standard classification tasks on complete datasets
-    \item \textbf{Missing Data Handling}: Robust performance with incomplete channel configurations
-    \item \textbf{Unsupervised Pre-training}: Large-scale pre-training on unlabeled biosignal data using a self-supervised approach where channels and tokens are randomly dropped. The perturbed signal is encoded by the same \ac{BIOT} network, and a predictor head is applied to the perturbed branch. A contrastive loss is computed between the normalized embeddings of the original and perturbed signals.
-    \item \textbf{Cross-dataset Transfer}: Knowledge transfer between datasets with different formats
+    \item \textbf{Supervised Learning}: Standard classification tasks on complete datasets.
+    \item \textbf{Missing Data Handling}: The framework exhibits robust performance with incomplete channel configurations.
+    \item \textbf{Unsupervised Pre-training}: \ac{BIOT} enables large-scale pre-training on unlabeled biosignal data through a self-supervised approach where channels and tokens are randomly dropped. The perturbed signal is encoded by the same network, and a predictor head is applied to the perturbed branch. A contrastive loss is computed between the normalized embeddings of the original and perturbed signals.
+    \item \textbf{Cross-dataset Transfer}: The tokenization approach facilitates knowledge transfer between datasets with different formats.
 \end{itemize}
 
 
 \section{Transformer Architecture and Linear Attention}
 \label{sec:background:transformer}
 
-The Transformer architecture revolutionized sequence modeling by introducing the attention mechanism as the main computational building block \cite{vaswani2017attention}. To understand why alternative architectures like \ac{xLSTM} were developed, it is important to understand both the strengths and limitations of Transformers.
+The Transformer architecture revolutionized sequence modeling by introducing the attention mechanism as the main computational building block~\cite{vaswani2017attention}. To understand why alternative architectures like \ac{xLSTM} were developed, it is important to understand both the strengths and limitations of Transformers.
 
 \subsection{Self-Attention Mechanism}
 
@@ -205,7 +203,9 @@ The standard attention mechanism has quadratic computational complexity $O(N^2)$
 
 \subsection{Linear Attention in BIOT}
 
-To address scalability concerns, \ac{BIOT} employs linear attention mechanisms that reduce computational complexity from $O(N^2)$ to $O(Nd)$ \cite{yang2023biot}. Following the family of linear attention methods \cite{katharopoulos2020transformers}, \ac{BIOT} uses a rank-$d$ approximation for the softmax attention by projecting keys and values with reduced-rank parameter matrices $\mathbf{E}^{\top} \in \mathbb{R}^{N \times d}$ and $\mathbf{F} \in \mathbb{R}^{d \times N}$ (where $d \ll N$). The formulation is:
+Given the quadratic scaling of standard attention mechanisms, the \ac{BIOT} architecture adopts linear attention to achieve $O(Nd)$ complexity instead of $O(N^2)$~\cite{yang2023biot}. This design choice proves critical for biosignal sequences, where multiple channels and fine temporal resolution can generate hundreds or thousands of tokens.
+
+The \ac{BIOT} implementation draws on linear attention methods~\cite{katharopoulos2020transformers} and introduces low-rank projection matrices $\mathbf{E}^{\top} \in \mathbb{R}^{N \times d}$ and $\mathbf{F} \in \mathbb{R}^{d \times N}$ (with $d \ll N$) to approximate the full attention mechanism~\cite{yang2023biot}. The attention computation becomes:
 
 \begin{equation}
 \mathbf{H} = \text{softmax}\left(\frac{(\mathbf{X}\mathbf{W}^Q)(\mathbf{E}\mathbf{X}\mathbf{W}^K)^{\top}}{\sqrt{l_2}}\right)(\mathbf{F}\mathbf{X}\mathbf{W}^V)
@@ -213,18 +213,18 @@ To address scalability concerns, \ac{BIOT} employs linear attention mechanisms t
 
 where $\mathbf{W}^Q, \mathbf{W}^K, \mathbf{W}^V \in \mathbb{R}^{l_1 \times l_2}$ are the query, key, and value projection matrices.
 
-This approximation retains the main properties of attention while significantly reducing computational requirements, making it practical for long biosignal sequences with multiple channels.
+This rank-$d$ approximation preserves essential attention properties while making the architecture practical for long multi-channel biosignal sequences~\cite{yang2023biot}.
 
 \subsection{Transformer in Biosignal Context}
 
-The application of Transformers to biosignals leverages several key advantages \cite{vaswani2017attention,yang2023biot}:
+The application of Transformers to biosignals leverages several key advantages~\cite{vaswani2017attention,yang2023biot}:
 
 \begin{itemize}
-    \item \textbf{Flexible Sequence Handling}: Attention mechanisms can handle variable-length sequences and missing tokens naturally \cite{yang2023biot}. While Transformers are not truly permutation-invariant (positional encodings preserve temporal order), they provide flexibility in processing sequences of different lengths.
+    \item \textbf{Flexible Sequence Handling}: Attention mechanisms can handle variable-length sequences and missing tokens naturally~\cite{yang2023biot}. While Transformers are not truly permutation-invariant (positional encodings preserve temporal order), they provide flexibility in processing sequences of different lengths.
     
-    \item \textbf{Long-range Dependencies}: Unlike \acp{RNN}, Transformers can capture dependencies across arbitrary distances without gradient degradation \cite{vaswani2017attention}.
+    \item \textbf{Long-range Dependencies}: Unlike \acp{RNN}, Transformers can capture dependencies across arbitrary distances without gradient degradation~\cite{vaswani2017attention}.
     
-    \item \textbf{Parallelization}: The attention mechanism allows for efficient parallel computation during training \cite{vaswani2017attention}.
+    \item \textbf{Parallelization}: The attention mechanism allows for efficient parallel computation during training~\cite{vaswani2017attention}.
     
     \item \textbf{Interpretability}: Attention weights provide insights into which temporal and spatial regions contribute to classification decisions.
 \end{itemize}
@@ -233,49 +233,49 @@ The application of Transformers to biosignals leverages several key advantages \
 \section{Extended Long Short-Term Memory (xLSTM)}
 \label{sec:background:xlstm}
 
-While Transformers have dominated sequence modeling in recent years, recent work has revisited \ac{LSTM} architectures \cite{hochreiter1997lstm}. The \acf{xLSTM} family represents a significant advancement in recurrent neural network design \cite{beck2024xlstm}. It specifically addresses three main limitations of traditional \acp{LSTM}.
+While Transformers have dominated sequence modeling in recent years, recent work has re-examined the capabilities of \ac{LSTM} architectures~\cite{hochreiter1997lstm} in modern sequence modeling contexts. The \acf{xLSTM} architecture was introduced~\cite{beck2024xlstm} as a redesigned family of LSTM variants intended to mitigate several structural limitations of traditional \acp{LSTM}.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{images/xlstm_extracted_images/page_1_img-0.jpeg}
 \caption{
-    The Extended LSTM (xLSTM) Family. From left to right: (1) Original LSTM with constant error carousel and gating, (2) New sLSTM and mLSTM cells with exponential gating, (3) xLSTM blocks incorporating residual connections, (4) Complete xLSTM architecture with stacked blocks. \cite{beck2024xlstm}
+    xLSTM architecture components (adapted from~\cite{beck2024xlstm}). The progression shows: (1) traditional LSTM structure with its constant error carousel mechanism, (2) two proposed cell variants (sLSTM and mLSTM) that employ exponential gate activations, (3) block-level integration with residual pathways, (4) full architecture formed by stacking multiple blocks.
 }\label{fig:xlstm_overview}
 \end{figure}
 
 \subsection{Limitations of Traditional LSTMs}
 
-Traditional \acp{LSTM} \cite{hochreiter1997lstm} face several constraints that limit their performance in modern applications \cite{beck2024xlstm}:
+The xLSTM work~\cite{beck2024xlstm} identifies several architectural constraints in traditional \acp{LSTM}~\cite{hochreiter1997lstm} that motivated the design:
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{images/xlstm_extracted_images/page_2_img-1.jpeg}
 \caption{
-    LSTM Limitations Illustrated. Left: Nearest Neighbor Search problem showing LSTM's inability to revise storage decisions (higher MSE indicates worse performance). Right: Rare Token Prediction demonstrating limited storage capacity (higher perplexity indicates worse performance on rare tokens). xLSTM addresses both limitations through exponential gating and matrix memory. \cite{beck2024xlstm}
+    Empirical demonstration of LSTM architectural constraints (adapted from~\cite{beck2024xlstm}). Two synthetic tasks highlight different issues: the Nearest Neighbor Search task (left panel, measured by MSE) reveals difficulties in updating stored information when new relevant data arrives, while the Rare Token Prediction task (right panel, measured by perplexity) shows degradation in performance for infrequent patterns.
 }\label{fig:lstm_limitations}
 \end{figure}
 
 \begin{enumerate}
-    \item \textbf{Inability to Revise Storage Decisions}: Once information is stored in the cell state, \acp{LSTM} struggle to replace it with more relevant information encountered later in the sequence.
+    \item \textbf{Fixed Memory Commitment}: The scalar cell state architecture makes it difficult to overwrite previously stored information when more relevant data becomes available later in the sequence.
     
-    \item \textbf{Limited Storage Capacity}: Information must be compressed into scalar cell states, limiting the model's ability to maintain multiple pieces of information simultaneously.
+    \item \textbf{Scalar Memory Bottleneck}: Compressing information into single scalar values per cell constrains the model's capacity to represent multiple concurrent patterns or features.
     
-    \item \textbf{Sequential Processing}: The recurrent nature of \acp{LSTM} prevents parallelization during training, making them computationally inefficient compared to Transformers.
+    \item \textbf{Inherent Sequential Dependency}: The recurrent formulation requires processing steps in strict temporal order, which prevents parallel computation during training and limits throughput compared to architectures like Transformers.
 \end{enumerate}
 
 \subsection{xLSTM Innovations}
 
-\ac{xLSTM} addresses these limitations through two key innovations: exponential gating and novel memory structures.
+The xLSTM architecture~\cite{beck2024xlstm} introduces two main modifications to the traditional LSTM structure: a different gate activation scheme and redesigned memory representations.
 
 \subsubsection{Exponential Gating}
 
-Traditional \ac{LSTM} gates use sigmoid activation functions, which can lead to vanishing gradients and limited expressiveness. \ac{xLSTM} introduces exponential gating with suitable normalization:
+The standard \ac{LSTM} employs sigmoid functions for gate activations, which compress values to the $(0,1)$ range. The xLSTM design replaces these with exponential activations:
 
 $$\tilde{f}_t = \exp(f_t), \quad \tilde{i}_t = \exp(i_t)$$
 
-where $f_t$ and $i_t$ are the forget and input gate pre-activations. This exponential formulation allows more dynamic gating behavior and better gradient flow.
+where $f_t$ and $i_t$ denote pre-activation values for the forget and input gates. The exponential function provides a wider effective dynamic range and modifies gradient propagation behavior, which may facilitate improved learning dynamics~\cite{beck2024xlstm}.
 
-\textbf{Stabilization:} Exponential activation functions can lead to numerical overflow. To address this, \ac{xLSTM} employs a log-domain stabilization technique using an additional state $m_t$ that tracks the running maximum:
+\textbf{Numerical Stabilization:} Since exponentials can grow unbounded, a stabilization mechanism is introduced~\cite{beck2024xlstm}. An auxiliary variable $m_t$ maintains the logarithmic maximum:
 
 \begin{align}
 m_t &= \max(\log(f_t) + m_{t-1}, \log(i_t)) \\
@@ -290,7 +290,7 @@ The stabilized gates $f_t'$ and $i_t'$ are then used in the forward pass, ensuri
 \ac{xLSTM} introduces two distinct memory architectures:
 
 \paragraph{Scalar LSTM (sLSTM)}
-\ac{sLSTM} retains the scalar memory structure of traditional \acp{LSTM} but introduces exponential gating to enable dynamic storage revision. The key innovation is exponential activation functions for gates with appropriate normalization. The \ac{sLSTM} update equations are:
+The \ac{sLSTM} variant maintains scalar-valued memory cells, similar to traditional \acp{LSTM}, but incorporates the exponential gate activations described above. The cell state evolution follows:
 
 \begin{align}
 c_t &= \tilde{f}_t \odot c_{t-1} + \tilde{i}_t \odot z_t \\
@@ -298,20 +298,20 @@ n_t &= \tilde{f}_t \odot n_{t-1} + \tilde{i}_t \\
 h_t &= o_t \odot \frac{c_t}{n_t}
 \end{align}
 
-where $\tilde{f}_t = \exp(f_t)$ and $\tilde{i}_t = \exp(i_t)$ are the exponential forget and input gates, and $n_t$ is a normalizer state that tracks the cumulative effect of gates. The exponential gating allows more effective memory management and the ability to revise storage decisions dynamically, addressing a key limitation of traditional \acp{LSTM}.
+where $\tilde{f}_t = \exp(f_t)$ and $\tilde{i}_t = \exp(i_t)$ denote the exponential gate values, while $z_t$ represents the input content. The additional variable $n_t$ accumulates gate contributions to normalize the output. This formulation allows the forget gate to more aggressively remove outdated information when $\tilde{f}_t$ is small.
 
 \paragraph{Matrix LSTM (mLSTM)}
-\ac{mLSTM} represents a major departure from scalar memory, using matrix-valued cell states $\mathbf{C}_t \in \mathbb{R}^{d \times d}$ to enhance storage capacity. This architecture enables:
+The \ac{mLSTM} variant uses matrix-valued memory $\mathbf{C}_t \in \mathbb{R}^{d \times d}$ instead of scalar cells. This design~\cite{beck2024xlstm} provides several properties:
 
 \begin{itemize}
-    \item \textbf{Enhanced Storage Capacity}: Matrix memory can maintain multiple independent pieces of information simultaneously through key-value associations.
+    \item \textbf{Increased Information Capacity}: Matrix storage allows representing multiple patterns simultaneously through structured key-value interactions.
     
-    \item \textbf{Parallelizable Computation}: Unlike \ac{sLSTM}, the matrix formulation is fully parallelizable as it abandons memory mixing (no hidden-hidden recurrent connections).
+    \item \textbf{Parallel Training}: The architecture removes recurrence between hidden states, enabling parallelization across the sequence dimension during training.
     
-    \item \textbf{Covariance Updates}: The outer product update rule based on key-value pairs provides richer representational capabilities.
+    \item \textbf{Associative Updates}: Memory updates use outer products between vectors, creating rank-one modifications to the memory matrix.
 \end{itemize}
 
-The \ac{mLSTM} update equations with normalizer state are:
+The memory dynamics are defined as:
 
 \begin{align}
 \mathbf{C}_t &= f_t \odot \mathbf{C}_{t-1} + i_t \odot \mathbf{v}_t \mathbf{k}_t^{\top} \\
@@ -319,7 +319,7 @@ The \ac{mLSTM} update equations with normalizer state are:
 \mathbf{h}_t &= \mathbf{o}_t \odot \frac{\mathbf{C}_t \mathbf{q}_t}{\max\{|\mathbf{n}_t^{\top} \mathbf{q}_t|, 1\}}
 \end{align}
 
-where $f_t$, $i_t$, and $\mathbf{o}_t$ are exponential gates, $\mathbf{v}_t$, $\mathbf{k}_t$, and $\mathbf{q}_t$ are value, key, and query vectors, and $\mathbf{n}_t$ is the normalizer state. The normalizer state tracks the weighted sum of key vectors and ensures stable retrieval by preventing division by near-zero values.
+Here $f_t$, $i_t$, $\mathbf{o}_t$ are gate values (with exponential activations), while $\mathbf{v}_t$, $\mathbf{k}_t$, $\mathbf{q}_t$ are the value, key, and query projections of the input. The normalizer $\mathbf{n}_t$ accumulates key vectors to stabilize the retrieval operation in the third equation.
 
 \subsection{xLSTM Block Architecture}
 
@@ -334,20 +334,20 @@ where $f_t$, $i_t$, and $\mathbf{o}_t$ are exponential gates, $\mathbf{v}_t$, $\
 
 Multiple \ac{xLSTM} blocks can be stacked to create deep architectures that combine the benefits of both \ac{sLSTM} and \ac{mLSTM} components.
 
-\subsection{Theoretical Advantages for Biosignals}
+\subsection{Potential Relevance for Biosignal Processing}
 
-The \ac{xLSTM} architecture offers several theoretical advantages for biosignal processing:
+The xLSTM modifications~\cite{beck2024xlstm} may offer certain properties relevant to biosignal analysis:
 
 \begin{itemize}
-    \item \textbf{Enhanced Temporal Modeling}: Exponential gating allows more nuanced temporal dependency capture, crucial for biosignals where precise timing of events is critical for clinical interpretation.
+    \item \textbf{Temporal Dependency Modeling}: Exponential gate activations provide a different mechanism for weighting temporal relationships, which could be relevant for biosignals where event timing carries clinical significance.
     
-    \item \textbf{Improved Memory Management}: The ability to revise storage decisions is particularly valuable for long biosignal sequences where later information may override earlier observations, addressing a key limitation that traditional \acp{LSTM} face.
+    \item \textbf{Dynamic Memory Allocation}: The modified gating scheme allows the network to adjust what information is retained as the sequence progresses, potentially useful when processing long recordings where later segments may contradict earlier ones.
     
-    \item \textbf{Scalable Architecture}: \ac{mLSTM}'s fully parallelizable nature (due to the absence of memory mixing) addresses computational efficiency concerns while maintaining recurrent modeling benefits. In contrast, \ac{sLSTM} remains inherently sequential due to memory mixing, though efficient CUDA implementations mitigate this limitation.
+    \item \textbf{Training Efficiency}: The \ac{mLSTM} variant enables parallel computation during training by removing hidden-to-hidden recurrence, while \ac{sLSTM} maintains sequential dependencies but can leverage optimized implementations.
     
-    \item \textbf{Rich Representations}: Matrix memory structures can potentially capture complex inter-channel relationships in multi-channel biosignals through key-value associations, providing enhanced storage capacity compared to scalar memories.
+    \item \textbf{Representational Capacity}: Matrix-valued memory in \ac{mLSTM} provides higher-dimensional storage that could model complex relationships in multi-channel data through its associative update mechanism.
     
-    \item \textbf{State Tracking Capability}: Unlike Transformers and State Space Models, \ac{xLSTM} (particularly \ac{sLSTM} with memory mixing) can solve state tracking problems, which may be important for tracking evolving patterns in biosignal sequences.
+    \item \textbf{Sequential State Maintenance}: The \ac{sLSTM} variant with its recurrent structure may handle tasks requiring explicit state tracking across time, which could be relevant for monitoring evolving biosignal patterns.
 \end{itemize}
 
 

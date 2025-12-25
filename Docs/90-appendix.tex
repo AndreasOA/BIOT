@@ -1,0 +1,192 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+\cleardoubleoddpage%  Make sure to start each chapter on a new odd page
+\chapter{Appendix}
+\label{app:appendix}
+
+\section{Research Questions and Answers}
+
+This section addresses key questions about the research design, execution, and interpretation of results.
+
+\subsection{What is the central question?}
+
+Can \ac{xLSTM} architectures (\ac{sLSTM}, \ac{mLSTM}, and their combination) effectively replace Linear Transformers in the \ac{BIOT} framework to improve \ac{EEG} event classification performance, particularly when processing sequences of varying temporal window lengths?
+
+The question specifically investigates whether the enhanced memory mechanisms of \ac{xLSTM}—scalar memory with exponential gating in \ac{sLSTM} and matrix memory with key-value associations in \ac{mLSTM}—provide advantages over linear attention for modeling temporal dependencies in biosignal data.
+
+\subsection{Why is this question important?}
+
+This question addresses a critical gap in biosignal processing research. While deep learning models have achieved impressive results in natural language processing through architectures like \ac{xLSTM}, their applicability to biosignal analysis remains unclear. \ac{EEG} signals present unique challenges: severe class imbalance, multi-channel spatial-temporal patterns, and variable recording configurations that differ fundamentally from language sequences.
+
+The question is important for several reasons:
+
+\textbf{Clinical Relevance:} Automated \ac{EEG} event classification assists neurologists in analyzing long-term recordings for seizure detection, epilepsy monitoring, and neurological disorder diagnosis. Improving classification accuracy, especially for rare but clinically critical events, could enhance patient care.
+
+\textbf{Domain Transfer Understanding:} \ac{xLSTM} architectures demonstrated substantial improvements in language modeling, but whether these benefits transfer to biosignal domains with fundamentally different sequence characteristics (frequency-domain tokens vs. discrete words, local patterns vs. long-range dependencies) is unknown.
+
+\textbf{Temporal Context Optimization:} The optimal temporal window size for capturing relevant neurological context around events is not well established. Understanding how different architectures respond to varying context lengths provides insights into both architectural capabilities and neurophysiological patterns.
+
+\subsection{What evidence/data (variables) are needed to answer this question?}
+
+The evaluation requires four categories of evidence:
+
+\textbf{Performance metrics} must capture classification quality under severe class imbalance ($66.77\%$ majority, $1.93\%$ rarest class):
+\begin{itemize}
+    \item Balanced accuracy (primary metric equally weighting all six event classes)
+    \item Cohen's kappa (agreement beyond chance)
+    \item Weighted F1 score
+    \item AUCPR macro (ranking quality for rare events)
+\end{itemize}
+
+\textbf{Architectural variants} serve as independent variables:
+\begin{itemize}
+    \item Linear Transformer baseline
+    \item \ac{sLSTM}
+    \item \ac{mLSTM}
+    \item Combined \ac{mLSTM}+\ac{sLSTM} ($7{:}1$ ratio)
+\end{itemize}
+
+\textbf{Temporal window configurations} test architecture sensitivity to sequence length: $5\,\text{s}$, $7\,\text{s}$, and $9\,\text{s}$ windows.
+
+\textbf{Training dynamics data} assess stability and reliability:
+\begin{itemize}
+    \item Standard deviation across five random seeds (10, 42, 123, 456, 999)
+    \item Computational runtime
+    \item Statistical significance measures (paired t-test and Wilcoxon p-values)
+    \item Class-specific performance from normalized confusion matrices (per-class recall, systematic misclassification patterns)
+\end{itemize}
+
+The \ac{TUEV} dataset provides the substrate: 359 training files and 159 evaluation files spanning six event classes (\ac{SPSW}, \ac{GPED}, \ac{PLED}, \ac{EYEM}, \ac{ARTF}, \ac{BCKG}) with $16$-channel bipolar \ac{TCP} montage at $200\,\text{Hz}$.
+
+\subsection{What methods are used to get this evidence/data?}
+
+The experimental design systematically compares $4$ architectures $\times$ $3$ window lengths $\times$ $5$ random seeds totaling $60$ runs. All variants share fixed hyperparameters (dropout $0.2$, $8$ blocks, embedding dimension $256$, batch size $128$) to isolate architectural effects. The training set (359 files) is partitioned $90\%$ train, $10\%$ validation at the subject level, with a separate evaluation set (159 files) for testing. Checkpoint selection uses balanced accuracy rather than validation loss to address class imbalance.
+
+Implementation uses PyTorch 2.x with PyTorch Lightning and the official xlstm package on a single NVIDIA RTX 3090 GPU (24GB VRAM). Training runs $100$ epochs with AdamW optimizer (learning rate $1 \times 10^{-4}$) and early stopping. The preprocessing pipeline:
+\begin{itemize}
+    \item Converts unipolar recordings to $16$-channel bipolar \ac{TCP} montage
+    \item Resamples from $250\,\text{Hz}$ to $200\,\text{Hz}$ using anti-aliasing filters
+    \item Applies $95^{\text{th}}$ percentile normalization for outlier robustness
+    \item Tokenizes via \ac{STFT} (FFT size $200$, hop length $100$, Hann window)
+\end{itemize}
+
+Evaluation combines PyHealth metrics computation, paired statistical tests (t-test and Wilcoxon signed-rank), normalized confusion matrices averaged over seeds and runtime measurement. Reproducibility measures include fixed random seeds and in depth documentation of experiments.
+
+\subsection{What analyses must be applied to the data to answer the central question?}
+
+Six complementary analyses address the research question:
+
+\textbf{Performance comparison} computes mean and standard deviation across seeds for each architecture-window combination, identifies best performers per window, and calculates coefficient of variation for stability assessment.
+
+\textbf{Statistical significance testing} applies paired t-tests and Wilcoxon tests ($\alpha=0.05$) comparing best \ac{xLSTM} variants against baseline at each window length, reporting both p-values and effect sizes while cautiously interpreting results given limited sample size ($n=5$).
+
+\textbf{Window-length dependency analysis} plots metric trajectories across windows to identify U-shaped, inverted-U, or monotonic patterns that reveal architecture-specific sequence-length sensitivities and scaling behaviors.
+
+\textbf{Class-specific performance analysis} generates normalized confusion matrices averaged over seeds, extracts per-class recall from diagonal entries, identifies systematic misclassification patterns from off-diagonal entries, and correlates performance with class frequency ($1.93\%$ to $66.77\%$) to assess clinical viability.
+
+\textbf{Computational efficiency analysis} measures training runtime with variance across seeds, calculates speedup factors relative to \ac{xLSTM} variants, assesses scaling with window length (linear, sublinear, superlinear), and evaluates performance-efficiency trade-offs.
+
+\textbf{Stability analysis} compares standard deviations across architectures for optimization stability, identifies variance patterns where $\sigma > \text{mean}$ indicates unstable predictions, and evaluates deployment reliability from cross-seed variability.
+
+\subsection{What evidence/data (values for the variables) were obtained?}
+
+Balanced accuracy results reveal window-dependent performance patterns:
+\begin{itemize}
+    \item \textbf{$5\,\text{s}$ windows}: \ac{sLSTM} achieves $52.15\% \pm 1.37\%$, nearly matching Linear Transformer's $52.06\% \pm 4.06\%$
+    \item \textbf{$7\,\text{s}$ windows}: \ac{mLSTM} leads ($50.66\% \pm 2.87\%$) while \ac{sLSTM} drops significantly ($48.45\% \pm 5.50\%$)
+    \item \textbf{$9\,\text{s}$ windows}: \ac{sLSTM} rebounds ($52.46\% \pm 3.81\%$) as Linear Transformer degrades ($48.45\% \pm 3.73\%$)
+    \item \textbf{Combined}: Stable across windows ($50.03$--$50.46\%$) but never best-in-class
+\end{itemize}
+
+Statistical testing shows balanced accuracy never reached significance at any window length. Only secondary metrics achieved significance: AUCPR Macro at $5\,\text{s}$ ($p=0.005$) and overall accuracy at $9\,\text{s}$ ($p=0.029$). Training runtime ranges from 1h49m--3h15m for Linear Transformer ($2.3$--$3.4\times$ faster than \ac{xLSTM}), 4h10m--6h40m for \ac{sLSTM}, to 5h30m--10h57m for \ac{mLSTM} with superlinear scaling.
+
+Class-specific recall reveals severe imbalance effects: Class~0 ($1.93\%$ frequency) achieves only $0$--$14.2\%$ recall (clinical failure), while Class~5 ($66.77\%$ frequency) dominates with $79.4$--$87.87\%$ recall. Intermediate classes achieve $41$--$66\%$ recall. Architecture-specific behaviors show Linear Transformer with monotonic degradation ($52.06\% \rightarrow 50.08\% \rightarrow 48.45\%$), \ac{sLSTM} with U-shaped pattern, and \ac{mLSTM} with inverted-U pattern. Cross-seed variability is high (CV $6$--$10\%$), with Class~0 variance exceeding mean ($\sigma=16.4\%$, mean$=8.2\%$), indicating unstable predictions.
+
+\subsection{What were the results of the analyses?}
+
+\textbf{Performance comparison} shows that \ac{xLSTM} variants did not consistently outperform the baseline:
+\begin{itemize}
+    \item \ac{sLSTM} excelled at $5\,\text{s}$ and $9\,\text{s}$ but failed at $7\,\text{s}$
+    \item \ac{mLSTM} peaked at $7\,\text{s}$ but collapsed at $9\,\text{s}$ ($46.40\%$)
+    \item Linear Transformer remained competitive ($52.06\%$ at $5\,\text{s}$) with $2.3\times$ faster training
+    \item Combined architecture provided stable but mediocre performance
+\end{itemize}
+Small effect sizes ($<5\%$) and high variability (CV $6$--$10\%$) suggest training dynamics matter more than architecture.
+
+\textbf{Statistical testing} showed balanced accuracy never reached significance (all $p > 0.11$). Only secondary metrics were significant: AUCPR at $5\,\text{s}$ ($p=0.005$) and overall accuracy at $9\,\text{s}$ ($p=0.029$). With only $n=5$ runs, the statistical power is too low to detect small differences.
+
+\textbf{Window-length patterns} revealed architecture-specific behaviors. Linear Transformer degraded monotonically across windows. \ac{sLSTM} showed U-shaped performance with Class~2 recall dropping from $52.5\%$ to $42.9\%$ at $7\,\text{s}$ ($p=0.043$). \ac{mLSTM} showed inverted-U pattern with collapse at $9\,\text{s}$. Combined architecture maintained stability ($50.03$--$50.46\%$) but never reached best performance.
+
+\textbf{Class-specific analysis} confirmed severe imbalance effects. Class~0 ($1.93\%$ frequency) achieved only $0$--$14.2\%$ recall (clinically unusable). Class~5 ($66.77\%$ frequency) dominated with $79.4$--$87.87\%$ recall. \ac{xLSTM} provided minimal improvements beyond slightly better majority-class stability.
+
+\textbf{Computational costs} were substantial. \ac{xLSTM} variants require $2.3$--$3.4\times$ longer training, with \ac{mLSTM} showing superlinear scaling. Combined with modest gains ($<5\%$), this indicates poor efficiency trade-offs.
+
+\textbf{Stability} varied across architectures. \ac{sLSTM} reduced variance at $5\,\text{s}$ ($1.37\%$ vs. $4.06\%$) but increased it at $7\,\text{s}$ ($5.50\%$). Combined architecture achieved good stability (CV $1.1$--$2.8\%$). However, Class~0 predictions remained unstable, and high overall variability (CV $6$--$10\%$) raises deployment concerns.
+
+\subsection{How did the analyses answer the central question?}
+
+The analyses provide a nuanced answer to the central question: \textbf{\ac{xLSTM} architectures can replace Linear Transformers in the \ac{BIOT} framework, but they do not consistently improve \ac{EEG} event classification performance and introduce significant computational costs.}
+
+\textbf{Key Findings:}
+
+\paragraph{1. Window-Specific, Not Universal, Improvements.}
+\ac{xLSTM} benefits depend strongly on window length. \ac{sLSTM} works best at $5\,\text{s}$ and $9\,\text{s}$, while \ac{mLSTM} excels at $7\,\text{s}$. This shows that \ac{xLSTM}'s memory mechanisms only help under specific conditions---not universally like in language processing.
+
+\paragraph{2. Limited Domain Transfer from NLP.}
+The modest improvements ($<5\%$) contrast with \ac{xLSTM}'s strong gains in language modeling. Language sequences have long-range dependencies over hundreds of tokens, while biosignals show mostly local patterns in $9$--$17$ tokens per channel. The enhanced memory designed for language may be overengineered for \ neurological events.
+
+\paragraph{3. Training Dynamics Dominate Architecture.}
+High variability (CV $6$--$10\%$) and lack of statistical significance show that training dynamics and initialization matter more than architecture. Improving training stability and addressing class imbalance may be more effective than pursuing complex architectures.
+
+\paragraph{4. Class Imbalance Remains Unaddressed.}
+Neither \ac{xLSTM} nor baseline achieve useful performance on minority classes. Class~0 never exceeds $15\%$ recall, making clinical deployment impossible without addressing imbalanced learning (e.g., cost-sensitive loss, data augmentation, focal loss).
+
+\paragraph{5. Computational Cost Outweighs Benefits.}
+\ac{xLSTM} variants need $2.3$--$3.4\times$ more training time. Given modest, inconsistent gains and no statistical significance, this computational cost provides poor practical value.
+
+\paragraph{6. Combined Architecture: Stable but Not Best.}
+The \ac{mLSTM}+\ac{sLSTM} architecture ($7{:}1$ ratio) achieves good stability ($50.03$--$50.46\%$) but never reaches best performance. The fixed ratio dilutes individual strengths rather than combining them effectively.
+
+\textbf{Direct Answer:} \ac{xLSTM} architectures \textit{can} replace Linear Transformers but \textit{should not} in most cases. The improvements are too inconsistent, computational costs too high, and class imbalance remains unsolved. Deployment would need careful window selection, $2$--$3\times$ longer training, and additional strategies for minority classes---making the baseline more practical.
+
+\subsection{What does this answer tell us about the broader field?}
+
+The findings have important implications for biosignal processing research, domain transfer in deep learning, and clinical machine learning deployment:
+
+\textbf{1. Domain Transfer Is Not Automatic.} Successful \ac{NLP} architectures do not automatically work for biosignals. Biosignal data differs fundamentally: continuous tokens, frequency-domain content, and local patterns rather than long-range dependencies. Researchers should validate \ac{NLP} models empirically before assuming they transfer to medical signals.
+
+\textbf{2. Sequence Length and Architecture Interact.} The U-shaped and inverted-U patterns show that architecture effectiveness depends on sequence length. One-size-fits-all architectures may be suboptimal. Adaptive architectures that adjust memory based on sequence length could provide more consistent benefits.
+
+\textbf{3. Class Imbalance Dominates Architecture.} Architectural sophistication cannot fix data imbalance. The $0$--$15\%$ recall on minority classes shows that addressing imbalance (sampling, loss design, augmentation) should be prioritized over architectural improvements. For clinical \ac{ML}, data-centric approaches may work better than model-centric ones.
+
+\textbf{4. Training Stability Matters More Than Expected.} High variability (CV $6$--$10\%$) shows that training dynamics impact results as much as architecture. Research should focus on better initialization, stable optimization, ensemble methods, and larger studies ($>20$ runs).
+
+\textbf{5. Computational Efficiency Is Critical.} The $2.3$--$3.4\times$ training time increase with modest gains shows that efficiency should be evaluated alongside accuracy. This matters especially for clinical deployment where resources and energy costs are limited.
+
+\textbf{6. Statistical Rigor Is Often Lacking.} No statistical significance despite numerical differences shows the need for larger sample sizes ($20$--$30$ runs), proper corrections, confidence intervals, and honest reporting. Many papers use only $3$--$5$ runs without statistical testing, potentially overstating small, unstable improvements.
+
+\textbf{7. Clinical Viability Needs More Than Accuracy.} Severe minority-class failures ($85$--$100\%$ missed for Class~0) despite decent aggregate metrics ($52\%$ balanced accuracy) show that standard metrics can hide clinical problems. Evaluation should include:
+\begin{itemize}
+    \item Class-specific performance
+    \item Clinical costs (false negative vs. false positive)
+    \item Deployment reliability (variance, worst-case)
+    \item Computational feasibility (time, latency, resources)
+\end{itemize}
+
+\textbf{8. Tokenization May Matter More Than Architecture.} The short sequences ($9$--$17$ tokens) and good baseline performance suggest that tokenization (converting $0.5$-second windows to frequency tokens) may be more important than the sequence model. Research might focus better on improving tokenization (learnable bands, adaptive windows) rather than complex sequence models.
+
+\textbf{9. Negative Results Are Valuable.} This work shows the value of reporting all results (not cherry-picking), acknowledging insignificance, and highlighting limitations. The field needs more honest reporting when advanced architectures fail to improve consistently.
+
+\textbf{Future Research Directions:}
+
+The findings suggest several high-priority research directions:
+\begin{itemize}
+    \item \textbf{Class imbalance mitigation}: Cost-sensitive learning, focal loss, data augmentation specifically for minority classes
+    \item \textbf{Training stability improvement}: Better initialization, regularization, ensemble methods
+    \item \textbf{Domain-specific architectures}: Biosignal-specific designs incorporating spatial-temporal characteristics
+    \item \textbf{Tokenization innovation}: Learnable, adaptive frequency-domain representations
+    \item \textbf{Cross-dataset validation}: Evaluating generalization to multiple hospitals, recording systems, patient populations
+    \item \textbf{Larger-scale evaluation}: $20$--$30$ runs per configuration for robust statistical conclusions
+    \item \textbf{Adaptive window selection}: Task-specific or event-specific temporal context optimization
+\end{itemize}

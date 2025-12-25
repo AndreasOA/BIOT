@@ -1,5 +1,5 @@
 ## Project Context
-- **Thesis Title (working):** *Evaluating xLSTM on BIOT*
+- **Thesis Title (working):** *Evaluating xLSTM for EEG Seizure Classification*.
 - **Student Profile:** 26-year-old Austrian AI student.  
   - English should be good, but not overly academic or too polished.  
   - The text should feel like it was written by a motivated but not native-level English speaker.  
