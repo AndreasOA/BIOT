@@ -13,7 +13,7 @@ This section addresses key questions about the research design, execution, and i
 
 Can \ac{xLSTM} architectures (\ac{sLSTM}, \ac{mLSTM}, and their combination) effectively replace Linear Transformers in the \ac{BIOT} framework to improve \ac{EEG} event classification performance, particularly when processing sequences of varying temporal window lengths?
 
-The question specifically investigates whether the enhanced memory mechanisms of \ac{xLSTM}—scalar memory with exponential gating in \ac{sLSTM} and matrix memory with key-value associations in \ac{mLSTM}—provide advantages over linear attention for modeling temporal dependencies in biosignal data.
+The question specifically investigates whether the enhanced memory mechanisms of \ac{xLSTM}, scalar memory with exponential gating in \ac{sLSTM} and matrix memory with key-value associations in \ac{mLSTM}, provide advantages over linear attention for modeling temporal dependencies in biosignal data.
 
 \subsection{Why is this question important?}
 
@@ -99,7 +99,7 @@ Balanced accuracy results reveal window-dependent performance patterns:
     \item \textbf{Combined}: Stable across windows ($50.03$--$50.46\%$) but never best-in-class
 \end{itemize}
 
-Statistical testing shows balanced accuracy never reached significance at any window length. Only secondary metrics achieved significance: AUCPR Macro at $5\,\text{s}$ ($p=0.005$) and overall accuracy at $9\,\text{s}$ ($p=0.029$). Training runtime ranges from 1h49m--3h15m for Linear Transformer ($2.3$--$3.4\times$ faster than \ac{xLSTM}), 4h10m--6h40m for \ac{sLSTM}, to 5h30m--10h57m for \ac{mLSTM} with superlinear scaling.
+Statistical testing shows balanced accuracy never reached significance at any window length. Only secondary metrics achieved significance: AUCPR Macro at $5\,\text{s}$ ($p=0.005$) and overall accuracy at $9\,\text{s}$ ($p=0.029$). Training runtime ranges from 1h49m--3h15m for Linear Transformer ($2.3$--$3.4\times$ faster than \ac{xLSTM}), 4h10m--6h40m for \ac{sLSTM}, to 5h30m--10h57m for \ac{mLSTM} with superlinear scaling. Note that these runtime measurements may not reflect the theoretical parallelization capabilities described in the original \ac{xLSTM} paper~\cite{beck2024xlstm}, which emphasizes that \ac{mLSTM} is ``fully parallelizable''. Implementation inefficiencies in the \texttt{xlstm} Python package (\url{https://github.com/NX-AI/xlstm/issues/58}) likely contribute to the observed computational costs.
 
 Class-specific recall reveals severe imbalance effects: Class~0 ($1.93\%$ frequency) achieves only $0$--$14.2\%$ recall (clinical failure), while Class~5 ($66.77\%$ frequency) dominates with $79.4$--$87.87\%$ recall. Intermediate classes achieve $41$--$66\%$ recall. Architecture-specific behaviors show Linear Transformer with monotonic degradation ($52.06\% \rightarrow 50.08\% \rightarrow 48.45\%$), \ac{sLSTM} with U-shaped pattern, and \ac{mLSTM} with inverted-U pattern. Cross-seed variability is high (CV $6$--$10\%$), with Class~0 variance exceeding mean ($\sigma=16.4\%$, mean$=8.2\%$), indicating unstable predictions.
 
@@ -120,7 +120,7 @@ Small effect sizes ($<5\%$) and high variability (CV $6$--$10\%$) suggest traini
 
 \textbf{Class-specific analysis} confirmed severe imbalance effects. Class~0 ($1.93\%$ frequency) achieved only $0$--$14.2\%$ recall (clinically unusable). Class~5 ($66.77\%$ frequency) dominated with $79.4$--$87.87\%$ recall. \ac{xLSTM} provided minimal improvements beyond slightly better majority-class stability.
 
-\textbf{Computational costs} were substantial. \ac{xLSTM} variants require $2.3$--$3.4\times$ longer training, with \ac{mLSTM} showing superlinear scaling. Combined with modest gains ($<5\%$), this indicates poor efficiency trade-offs.
+\textbf{Computational costs} were substantial. \ac{xLSTM} variants require $2.3$--$3.4\times$ longer training, with \ac{mLSTM} showing superlinear scaling. Combined with modest gains ($<5\%$), this indicates poor efficiency trade-offs. However, this assessment should be qualified: the original \ac{xLSTM} work~\cite{beck2024xlstm} describes \ac{mLSTM} as ``fully parallelizable'' and designed for efficient scaling, suggesting that the observed runtime reflects implementation limitations in the \texttt{xlstm} package (\url{https://github.com/NX-AI/xlstm/issues/58}) rather than fundamental architectural properties.
 
 \textbf{Stability} varied across architectures. \ac{sLSTM} reduced variance at $5\,\text{s}$ ($1.37\%$ vs. $4.06\%$) but increased it at $7\,\text{s}$ ($5.50\%$). Combined architecture achieved good stability (CV $1.1$--$2.8\%$). However, Class~0 predictions remained unstable, and high overall variability (CV $6$--$10\%$) raises deployment concerns.
 
@@ -143,12 +143,12 @@ High variability (CV $6$--$10\%$) and lack of statistical significance show that
 Neither \ac{xLSTM} nor baseline achieve useful performance on minority classes. Class~0 never exceeds $15\%$ recall, making clinical deployment impossible without addressing imbalanced learning (e.g., cost-sensitive loss, data augmentation, focal loss).
 
 \paragraph{5. Computational Cost Outweighs Benefits.}
-\ac{xLSTM} variants need $2.3$--$3.4\times$ more training time. Given modest, inconsistent gains and no statistical significance, this computational cost provides poor practical value.
+\ac{xLSTM} variants need $2.3$--$3.4\times$ more training time. Given modest, inconsistent gains and no statistical significance, this computational cost provides poor practical value. It must be noted, however, that the original \ac{xLSTM} paper~\cite{beck2024xlstm} emphasizes parallelizability and efficient scaling, suggesting that these runtime measurements reflect implementation constraints in the \texttt{xlstm} Python package (\url{https://github.com/NX-AI/xlstm/issues/58}) rather than inherent architectural limitations.
 
 \paragraph{6. Combined Architecture: Stable but Not Best.}
 The \ac{mLSTM}+\ac{sLSTM} architecture ($7{:}1$ ratio) achieves good stability ($50.03$--$50.46\%$) but never reaches best performance. The fixed ratio dilutes individual strengths rather than combining them effectively.
 
-\textbf{Direct Answer:} \ac{xLSTM} architectures \textit{can} replace Linear Transformers but \textit{should not} in most cases. The improvements are too inconsistent, computational costs too high, and class imbalance remains unsolved. Deployment would need careful window selection, $2$--$3\times$ longer training, and additional strategies for minority classes---making the baseline more practical.
+\textbf{Direct Answer:} \ac{xLSTM} architectures \textit{can} replace Linear Transformers but \textit{should not} in most cases given the current implementation. The improvements are too inconsistent, computational costs too high, and class imbalance remains unsolved. While the \ac{xLSTM} paper~\cite{beck2024xlstm} describes efficient parallelization capabilities, the \texttt{xlstm} package implementation does not fully realize this potential (\url{https://github.com/NX-AI/xlstm/issues/58}). Deployment would need careful window selection, $2$--$3\times$ longer training (with current implementation), and additional strategies for minority classes---making the baseline more practical.
 
 \subsection{What does this answer tell us about the broader field?}
 
@@ -162,7 +162,7 @@ The findings have important implications for biosignal processing research, doma
 
 \textbf{4. Training Stability Matters More Than Expected.} High variability (CV $6$--$10\%$) shows that training dynamics impact results as much as architecture. Research should focus on better initialization, stable optimization, ensemble methods, and larger studies ($>20$ runs).
 
-\textbf{5. Computational Efficiency Is Critical.} The $2.3$--$3.4\times$ training time increase with modest gains shows that efficiency should be evaluated alongside accuracy. This matters especially for clinical deployment where resources and energy costs are limited.
+\textbf{5. Computational Efficiency Is Critical.} The $2.3$--$3.4\times$ training time increase with modest gains shows that efficiency should be evaluated alongside accuracy. This matters especially for clinical deployment where resources and energy costs are limited. Importantly, the original \ac{xLSTM} work~\cite{beck2024xlstm} emphasizes that \ac{mLSTM} is designed for parallelization and efficient scaling. The observed computational costs likely reflect implementation inefficiencies in the \texttt{xlstm} Python package (\url{https://github.com/NX-AI/xlstm/issues/58}) rather than fundamental architectural constraints, meaning optimized implementations could substantially reduce this overhead.
 
 \textbf{6. Statistical Rigor Is Often Lacking.} No statistical significance despite numerical differences shows the need for larger sample sizes ($20$--$30$ runs), proper corrections, confidence intervals, and honest reporting. Many papers use only $3$--$5$ runs without statistical testing, potentially overstating small, unstable improvements.
 

@@ -1,0 +1,408 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\cleardoubleoddpage%  Make sure to start each chapter on a new odd page
+\chapter{Confusion Matrices and Class-Specific Analysis}
+\label{app:confusion_matrices}
+
+\section{Complete Confusion Matrix Collection}
+\label{app:complete_confusion_matrices}
+
+This section provides the full set of normalized confusion matrices referenced in the class-specific analysis in Chapter~\ref{sec:results}. Confusion matrices are normalized row-wise, so diagonal entries represent per-class recall (sensitivity) and off-diagonal entries show misclassification rates. All values are mean~$\pm$~standard deviation across five random seeds.
+
+\subsection{Overview}
+
+A confusion matrix displays the classification performance for each true class (rows) against predicted classes (columns). In this multiclass seizure classification task with six classes (0--5):
+\begin{itemize}
+\item \textbf{Diagonal values (bold):} Per-class recall---the fraction of true instances correctly classified.
+\item \textbf{Off-diagonal values:} Misclassification rates---the fraction of true instances incorrectly assigned to other classes.
+\item \textbf{Class distribution:} Class~0 (1.93\%), Class~1 (15.89\%), Class~2 (6.79\%), Class~3 (1.12\%), Class~4 (7.49\%), Class~5 (66.77\%).
+\end{itemize}
+
+The severe class imbalance strongly influences model behavior, with majority-class bias evident across all architectures.
+
+\subsection{Confusion Matrices by Architecture and Window Length}
+\label{app:confusion_matrices_by_config}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: Linear Transformer at 5-second windows (±2s/±2s)}
+\label{tab:app_cm_linear_5s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.082}$\pm$0.164 & 0.259$\pm$0.135 & 0.140$\pm$0.109 & 0.070$\pm$0.067 & 0.123$\pm$0.150 & 0.325$\pm$0.082 \\
+	\textbf{Class 1} & 0.027$\pm$0.027 & \textbf{0.411}$\pm$0.119 & 0.201$\pm$0.035 & 0.010$\pm$0.009 & 0.229$\pm$0.114 & 0.122$\pm$0.061 \\
+	\textbf{Class 2} & 0.047$\pm$0.022 & 0.144$\pm$0.038 & \textbf{0.567}$\pm$0.064 & 0.065$\pm$0.041 & 0.063$\pm$0.035 & 0.113$\pm$0.037 \\
+	\textbf{Class 3} & 0.005$\pm$0.003 & 0.002$\pm$0.005 & 0.022$\pm$0.019 & \textbf{0.664}$\pm$0.046 & 0.086$\pm$0.045 & 0.221$\pm$0.034 \\
+	\textbf{Class 4} & 0.007$\pm$0.006 & 0.006$\pm$0.005 & 0.029$\pm$0.029 & 0.038$\pm$0.020 & \textbf{0.605}$\pm$0.099 & 0.316$\pm$0.088 \\
+	\textbf{Class 5} & 0.029$\pm$0.018 & 0.011$\pm$0.005 & 0.047$\pm$0.011 & 0.029$\pm$0.014 & 0.089$\pm$0.034 & \textbf{0.794}$\pm$0.030 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: Linear Transformer at 7-second windows (±3s/±3s)}
+\label{tab:app_cm_linear_7s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.066}$\pm$0.089 & 0.383$\pm$0.130 & 0.086$\pm$0.039 & 0.090$\pm$0.043 & 0.141$\pm$0.155 & 0.234$\pm$0.036 \\
+	\textbf{Class 1} & 0.028$\pm$0.028 & \textbf{0.485}$\pm$0.117 & 0.191$\pm$0.070 & 0.008$\pm$0.009 & 0.235$\pm$0.114 & 0.053$\pm$0.017 \\
+	\textbf{Class 2} & 0.079$\pm$0.071 & 0.181$\pm$0.096 & \textbf{0.466}$\pm$0.100 & 0.088$\pm$0.049 & 0.065$\pm$0.016 & 0.119$\pm$0.061 \\
+	\textbf{Class 3} & 0.002$\pm$0.004 & 0.009$\pm$0.009 & 0.016$\pm$0.013 & \textbf{0.593}$\pm$0.082 & 0.104$\pm$0.051 & 0.275$\pm$0.061 \\
+	\textbf{Class 4} & 0.002$\pm$0.003 & 0.011$\pm$0.009 & 0.013$\pm$0.011 & 0.071$\pm$0.028 & \textbf{0.606}$\pm$0.073 & 0.296$\pm$0.092 \\
+	\textbf{Class 5} & 0.022$\pm$0.009 & 0.015$\pm$0.014 & 0.034$\pm$0.010 & 0.033$\pm$0.017 & 0.107$\pm$0.037 & \textbf{0.788}$\pm$0.066 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: Linear Transformer at 9-second windows (±4s/±4s)}
+\label{tab:app_cm_linear_9s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.017}$\pm$0.028 & 0.349$\pm$0.121 & 0.240$\pm$0.069 & 0.078$\pm$0.061 & 0.031$\pm$0.048 & 0.286$\pm$0.049 \\
+	\textbf{Class 1} & 0.007$\pm$0.005 & \textbf{0.404}$\pm$0.183 & 0.270$\pm$0.076 & 0.008$\pm$0.008 & 0.175$\pm$0.102 & 0.135$\pm$0.076 \\
+	\textbf{Class 2} & 0.041$\pm$0.024 & 0.162$\pm$0.075 & \textbf{0.512}$\pm$0.117 & 0.099$\pm$0.060 & 0.053$\pm$0.040 & 0.134$\pm$0.068 \\
+	\textbf{Class 3} & 0.009$\pm$0.012 & 0.007$\pm$0.010 & 0.019$\pm$0.010 & \textbf{0.616}$\pm$0.153 & 0.068$\pm$0.048 & 0.281$\pm$0.130 \\
+	\textbf{Class 4} & 0.008$\pm$0.005 & 0.008$\pm$0.012 & 0.022$\pm$0.012 & 0.061$\pm$0.041 & \textbf{0.584}$\pm$0.054 & 0.317$\pm$0.052 \\
+	\textbf{Class 5} & 0.031$\pm$0.019 & 0.012$\pm$0.009 & 0.049$\pm$0.018 & 0.036$\pm$0.028 & 0.099$\pm$0.020 & \textbf{0.774}$\pm$0.044 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: sLSTM at 5-second windows (±2s/±2s)}
+\label{tab:app_cm_slstm_5s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.051}$\pm$0.078 & 0.400$\pm$0.058 & 0.238$\pm$0.022 & 0.056$\pm$0.023 & 0.062$\pm$0.059 & 0.194$\pm$0.085 \\
+	\textbf{Class 1} & 0.027$\pm$0.018 & \textbf{0.420}$\pm$0.143 & 0.184$\pm$0.015 & 0.007$\pm$0.005 & 0.108$\pm$0.063 & 0.255$\pm$0.090 \\
+	\textbf{Class 2} & 0.093$\pm$0.060 & 0.116$\pm$0.062 & \textbf{0.525}$\pm$0.095 & 0.047$\pm$0.044 & 0.077$\pm$0.025 & 0.142$\pm$0.052 \\
+	\textbf{Class 3} & 0.004$\pm$0.008 & 0.000$\pm$0.000 & 0.012$\pm$0.019 & \textbf{0.664}$\pm$0.120 & 0.097$\pm$0.042 & 0.224$\pm$0.086 \\
+	\textbf{Class 4} & 0.001$\pm$0.001 & 0.010$\pm$0.007 & 0.011$\pm$0.006 & 0.030$\pm$0.016 & \textbf{0.643}$\pm$0.057 & 0.305$\pm$0.053 \\
+	\textbf{Class 5} & 0.017$\pm$0.018 & 0.018$\pm$0.007 & 0.030$\pm$0.013 & 0.011$\pm$0.006 & 0.097$\pm$0.020 & \textbf{0.826}$\pm$0.015 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: sLSTM at 7-second windows (±3s/±3s)}
+\label{tab:app_cm_slstm_7s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.010}$\pm$0.015 & 0.384$\pm$0.066 & 0.126$\pm$0.123 & 0.164$\pm$0.125 & 0.081$\pm$0.076 & 0.235$\pm$0.097 \\
+	\textbf{Class 1} & 0.017$\pm$0.014 & \textbf{0.449}$\pm$0.166 & 0.149$\pm$0.040 & 0.006$\pm$0.007 & 0.200$\pm$0.116 & 0.179$\pm$0.070 \\
+	\textbf{Class 2} & 0.091$\pm$0.046 & 0.174$\pm$0.059 & \textbf{0.429}$\pm$0.109 & 0.064$\pm$0.052 & 0.086$\pm$0.043 & 0.155$\pm$0.085 \\
+	\textbf{Class 3} & 0.005$\pm$0.011 & 0.004$\pm$0.010 & 0.009$\pm$0.019 & \textbf{0.590}$\pm$0.090 & 0.083$\pm$0.036 & 0.309$\pm$0.083 \\
+	\textbf{Class 4} & 0.004$\pm$0.005 & 0.011$\pm$0.014 & 0.004$\pm$0.002 & 0.018$\pm$0.011 & \textbf{0.598}$\pm$0.167 & 0.366$\pm$0.160 \\
+	\textbf{Class 5} & 0.023$\pm$0.011 & 0.021$\pm$0.008 & 0.013$\pm$0.005 & 0.010$\pm$0.010 & 0.102$\pm$0.042 & \textbf{0.832}$\pm$0.056 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: sLSTM at 9-second windows (±4s/±4s)}
+\label{tab:app_cm_slstm_9s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.142}$\pm$0.094 & 0.371$\pm$0.144 & 0.223$\pm$0.151 & 0.096$\pm$0.061 & 0.014$\pm$0.022 & 0.153$\pm$0.075 \\
+	\textbf{Class 1} & 0.047$\pm$0.058 & \textbf{0.444}$\pm$0.173 & 0.238$\pm$0.118 & 0.007$\pm$0.010 & 0.078$\pm$0.041 & 0.185$\pm$0.153 \\
+	\textbf{Class 2} & 0.047$\pm$0.030 & 0.170$\pm$0.015 & \textbf{0.516}$\pm$0.089 & 0.059$\pm$0.043 & 0.061$\pm$0.041 & 0.146$\pm$0.071 \\
+	\textbf{Class 3} & 0.020$\pm$0.038 & 0.002$\pm$0.004 & 0.006$\pm$0.011 & \textbf{0.638}$\pm$0.170 & 0.075$\pm$0.080 & 0.258$\pm$0.106 \\
+	\textbf{Class 4} & 0.011$\pm$0.008 & 0.015$\pm$0.009 & 0.015$\pm$0.011 & 0.038$\pm$0.039 & \textbf{0.576}$\pm$0.055 & 0.345$\pm$0.048 \\
+	\textbf{Class 5} & 0.022$\pm$0.010 & 0.029$\pm$0.006 & 0.027$\pm$0.017 & 0.013$\pm$0.014 & 0.078$\pm$0.036 & \textbf{0.831}$\pm$0.045 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: mLSTM at 5-second windows (±2s/±2s)}
+\label{tab:app_cm_mlstm_5s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.083}$\pm$0.072 & 0.443$\pm$0.039 & 0.078$\pm$0.062 & 0.095$\pm$0.048 & 0.059$\pm$0.054 & 0.242$\pm$0.036 \\
+	\textbf{Class 1} & 0.006$\pm$0.004 & \textbf{0.395}$\pm$0.113 & 0.143$\pm$0.061 & 0.006$\pm$0.002 & 0.138$\pm$0.080 & 0.312$\pm$0.221 \\
+	\textbf{Class 2} & 0.022$\pm$0.016 & 0.135$\pm$0.026 & \textbf{0.517}$\pm$0.057 & 0.048$\pm$0.025 & 0.116$\pm$0.022 & 0.162$\pm$0.062 \\
+	\textbf{Class 3} & 0.005$\pm$0.011 & 0.010$\pm$0.009 & 0.013$\pm$0.022 & \textbf{0.682}$\pm$0.030 & 0.147$\pm$0.046 & 0.144$\pm$0.055 \\
+	\textbf{Class 4} & 0.004$\pm$0.002 & 0.016$\pm$0.008 & 0.010$\pm$0.008 & 0.013$\pm$0.010 & \textbf{0.550}$\pm$0.072 & 0.406$\pm$0.061 \\
+	\textbf{Class 5} & 0.014$\pm$0.004 & 0.026$\pm$0.007 & 0.026$\pm$0.010 & 0.004$\pm$0.002 & 0.102$\pm$0.031 & \textbf{0.829}$\pm$0.040 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: mLSTM at 7-second windows (±3s/±3s)}
+\label{tab:app_cm_mlstm_7s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.083}$\pm$0.108 & 0.425$\pm$0.115 & 0.044$\pm$0.031 & 0.139$\pm$0.061 & 0.019$\pm$0.022 & 0.289$\pm$0.053 \\
+	\textbf{Class 1} & 0.030$\pm$0.028 & \textbf{0.532}$\pm$0.091 & 0.141$\pm$0.037 & 0.010$\pm$0.006 & 0.114$\pm$0.078 & 0.171$\pm$0.112 \\
+	\textbf{Class 2} & 0.076$\pm$0.053 & 0.137$\pm$0.030 & \textbf{0.483}$\pm$0.087 & 0.053$\pm$0.028 & 0.100$\pm$0.026 & 0.150$\pm$0.043 \\
+	\textbf{Class 3} & 0.002$\pm$0.005 & 0.007$\pm$0.009 & 0.016$\pm$0.016 & \textbf{0.579}$\pm$0.036 & 0.160$\pm$0.021 & 0.235$\pm$0.052 \\
+	\textbf{Class 4} & 0.005$\pm$0.005 & 0.011$\pm$0.010 & 0.012$\pm$0.012 & 0.008$\pm$0.009 & \textbf{0.546}$\pm$0.077 & 0.417$\pm$0.064 \\
+	\textbf{Class 5} & 0.028$\pm$0.017 & 0.024$\pm$0.013 & 0.020$\pm$0.007 & 0.006$\pm$0.003 & 0.106$\pm$0.010 & \textbf{0.815}$\pm$0.020 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: mLSTM at 9-second windows (±4s/±4s)}
+\label{tab:app_cm_mlstm_9s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.015}$\pm$0.027 & 0.441$\pm$0.036 & 0.037$\pm$0.067 & 0.124$\pm$0.079 & 0.043$\pm$0.048 & 0.340$\pm$0.146 \\
+	\textbf{Class 1} & 0.018$\pm$0.013 & \textbf{0.417}$\pm$0.161 & 0.142$\pm$0.045 & 0.003$\pm$0.003 & 0.151$\pm$0.082 & 0.269$\pm$0.185 \\
+	\textbf{Class 2} & 0.085$\pm$0.086 & 0.149$\pm$0.058 & \textbf{0.486}$\pm$0.121 & 0.040$\pm$0.024 & 0.058$\pm$0.025 & 0.183$\pm$0.075 \\
+	\textbf{Class 3} & 0.005$\pm$0.008 & 0.001$\pm$0.003 & 0.013$\pm$0.009 & \textbf{0.604}$\pm$0.100 & 0.114$\pm$0.033 & 0.263$\pm$0.100 \\
+	\textbf{Class 4} & 0.004$\pm$0.004 & 0.010$\pm$0.008 & 0.009$\pm$0.007 & 0.025$\pm$0.011 & \textbf{0.425}$\pm$0.139 & 0.528$\pm$0.149 \\
+	\textbf{Class 5} & 0.025$\pm$0.017 & 0.024$\pm$0.006 & 0.020$\pm$0.007 & 0.009$\pm$0.008 & 0.084$\pm$0.035 & \textbf{0.838}$\pm$0.053 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: mLSTM+sLSTM at 5-second windows (±2s/±2s)}
+\label{tab:app_cm_combined_5s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.044}$\pm$0.036 & 0.434$\pm$0.070 & 0.068$\pm$0.054 & 0.096$\pm$0.026 & 0.065$\pm$0.058 & 0.293$\pm$0.092 \\
+	\textbf{Class 1} & 0.020$\pm$0.014 & \textbf{0.406}$\pm$0.152 & 0.188$\pm$0.074 & 0.004$\pm$0.003 & 0.093$\pm$0.073 & 0.288$\pm$0.152 \\
+	\textbf{Class 2} & 0.059$\pm$0.011 & 0.152$\pm$0.049 & \textbf{0.511}$\pm$0.064 & 0.046$\pm$0.014 & 0.090$\pm$0.042 & 0.141$\pm$0.049 \\
+	\textbf{Class 3} & 0.008$\pm$0.011 & 0.004$\pm$0.008 & 0.019$\pm$0.015 & \textbf{0.666}$\pm$0.107 & 0.142$\pm$0.065 & 0.161$\pm$0.102 \\
+	\textbf{Class 4} & 0.005$\pm$0.006 & 0.018$\pm$0.007 & 0.012$\pm$0.009 & 0.015$\pm$0.008 & \textbf{0.552}$\pm$0.102 & 0.398$\pm$0.092 \\
+	\textbf{Class 5} & 0.030$\pm$0.011 & 0.027$\pm$0.007 & 0.026$\pm$0.010 & 0.006$\pm$0.003 & 0.090$\pm$0.029 & \textbf{0.822}$\pm$0.039 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: mLSTM+sLSTM at 7-second windows (±3s/±3s)}
+\label{tab:app_cm_combined_7s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.042}$\pm$0.054 & 0.393$\pm$0.064 & 0.124$\pm$0.133 & 0.150$\pm$0.031 & 0.016$\pm$0.019 & 0.274$\pm$0.071 \\
+	\textbf{Class 1} & 0.012$\pm$0.012 & \textbf{0.392}$\pm$0.052 & 0.185$\pm$0.048 & 0.008$\pm$0.006 & 0.145$\pm$0.066 & 0.258$\pm$0.053 \\
+	\textbf{Class 2} & 0.038$\pm$0.032 & 0.124$\pm$0.025 & \textbf{0.562}$\pm$0.046 & 0.069$\pm$0.016 & 0.078$\pm$0.031 & 0.129$\pm$0.041 \\
+	\textbf{Class 3} & 0.006$\pm$0.009 & 0.004$\pm$0.008 & 0.012$\pm$0.010 & \textbf{0.706}$\pm$0.101 & 0.094$\pm$0.072 & 0.179$\pm$0.079 \\
+	\textbf{Class 4} & 0.004$\pm$0.005 & 0.010$\pm$0.004 & 0.017$\pm$0.017 & 0.023$\pm$0.007 & \textbf{0.496}$\pm$0.123 & 0.451$\pm$0.141 \\
+	\textbf{Class 5} & 0.017$\pm$0.016 & 0.027$\pm$0.006 & 0.024$\pm$0.005 & 0.011$\pm$0.004 & 0.091$\pm$0.034 & \textbf{0.829}$\pm$0.028 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Normalized Confusion Matrix: mLSTM+sLSTM at 9-second windows (±4s/±4s)}
+\label{tab:app_cm_combined_9s}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccccc}
+	\toprule
+	\textbf{True $\backslash$ Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
+\midrule
+	\textbf{Class 0} & \textbf{0.017}$\pm$0.031 & 0.376$\pm$0.063 & 0.134$\pm$0.086 & 0.128$\pm$0.041 & 0.049$\pm$0.069 & 0.295$\pm$0.048 \\
+	\textbf{Class 1} & 0.013$\pm$0.009 & \textbf{0.375}$\pm$0.119 & 0.194$\pm$0.086 & 0.012$\pm$0.011 & 0.079$\pm$0.022 & 0.327$\pm$0.169 \\
+	\textbf{Class 2} & 0.028$\pm$0.019 & 0.103$\pm$0.031 & \textbf{0.584}$\pm$0.091 & 0.089$\pm$0.031 & 0.080$\pm$0.026 & 0.115$\pm$0.061 \\
+	\textbf{Class 3} & 0.002$\pm$0.004 & 0.004$\pm$0.008 & 0.020$\pm$0.017 & \textbf{0.729}$\pm$0.093 & 0.071$\pm$0.035 & 0.174$\pm$0.100 \\
+	\textbf{Class 4} & 0.004$\pm$0.003 & 0.012$\pm$0.010 & 0.009$\pm$0.011 & 0.033$\pm$0.017 & \textbf{0.467}$\pm$0.043 & 0.474$\pm$0.037 \\
+	\textbf{Class 5} & 0.015$\pm$0.007 & 0.025$\pm$0.005 & 0.028$\pm$0.018 & 0.014$\pm$0.009 & 0.085$\pm$0.009 & \textbf{0.833}$\pm$0.029 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+\section{Statistical Significance Testing for Confusion Matrix Patterns}
+\label{app:cm_statistical_tests}
+
+This section provides statistical tests for the class-specific performance differences shown in the confusion matrices above. We first examine per-class recall (diagonal entries), then analyze whether the overall confusion pattern differs significantly between architectures.
+
+\subsection{Per-Class Recall Comparisons}
+\label{app:per_class_recall_tests}
+
+Tables~\ref{tab:class_comparison_5s}--\ref{tab:class_comparison_9s} present paired statistical tests for per-class recall (diagonal of the normalized confusion matrix). This helps to check if improvements are concentrated in specific classes or reflect broad changes.
+
+All tests are paired across random seeds ($n=5$, $\alpha=0.05$). For each comparison, we report both a paired t-test (parametric) and a Wilcoxon signed-rank test (non-parametric).
+
+\subsubsection{5-Second Windows}
+
+\begin{table}[htbp]
+\centering
+\caption{Statistical comparison of per-class recall: Linear Transformer vs.\ \ac{sLSTM} at 5\,s windows. Tests are paired across seeds ($n=5$, $\alpha=0.05$).}
+\label{tab:class_comparison_5s}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{l|c|c|c|c|c}
+\hline
+		\textbf{Class} & \textbf{Linear} & \textbf{\ac{sLSTM}} & \textbf{t-stat} & \textbf{p (t-test)} & \textbf{p (Wilcoxon)} \\
+\hline
+Class 0 & 0.082$\pm{\scriptsize 0.164}$ & 0.051$\pm{\scriptsize 0.078}$ & 0.33 & 0.756 & 1.000 \\
+Class 1 & 0.411$\pm{\scriptsize 0.119}$ & 0.420$\pm{\scriptsize 0.143}$ & $-0.13$ & 0.902 & 0.812 \\
+Class 2 & 0.567$\pm{\scriptsize 0.064}$ & 0.525$\pm{\scriptsize 0.095}$ & 0.92 & 0.410 & 0.312 \\
+Class 3 & 0.664$\pm{\scriptsize 0.046}$ & 0.664$\pm{\scriptsize 0.120}$ & 0.01 & 0.989 & 1.000 \\
+Class 4 & 0.605$\pm{\scriptsize 0.099}$ & 0.643$\pm{\scriptsize 0.057}$ & $-0.71$ & 0.515 & 0.812 \\
+Class 5 & 0.794$\pm{\scriptsize 0.030}$ & 0.826$\pm{\scriptsize 0.015}$ & $-2.38$ & 0.076 & 0.062 \\
+\hline
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+At 5\,s, no per-class recall difference reaches significance. The strongest trend is the majority class (Class~5), which improves for \ac{sLSTM}, but it stays above $p=0.05$.
+
+\subsubsection{7-Second Windows}
+
+\begin{table}[htbp]
+\centering
+\caption{Statistical comparison of per-class recall: Linear Transformer vs.\ \ac{mLSTM} at 7\,s windows. Tests are paired across seeds ($n=5$, $\alpha=0.05$).}
+\label{tab:class_comparison_7s}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{l|c|c|c|c|c}
+\hline
+		\textbf{Class} & \textbf{Linear} & \textbf{\ac{mLSTM}} & \textbf{t-stat} & \textbf{p (t-test)} & \textbf{p (Wilcoxon)} \\
+\hline
+Class 0 & 0.066$\pm{\scriptsize 0.089}$ & 0.083$\pm{\scriptsize 0.108}$ & $-0.29$ & 0.789 & 0.625 \\
+Class 1 & 0.485$\pm{\scriptsize 0.117}$ & 0.532$\pm{\scriptsize 0.091}$ & $-1.05$ & 0.354 & 0.438 \\
+Class 2 & 0.466$\pm{\scriptsize 0.100}$ & 0.483$\pm{\scriptsize 0.087}$ & $-0.32$ & 0.763 & 0.812 \\
+Class 3 & 0.593$\pm{\scriptsize 0.082}$ & 0.579$\pm{\scriptsize 0.036}$ & 0.32 & 0.764 & 1.000 \\
+Class 4 & 0.606$\pm{\scriptsize 0.073}$ & 0.546$\pm{\scriptsize 0.077}$ & 0.96 & 0.390 & 0.812 \\
+Class 5 & 0.788$\pm{\scriptsize 0.066}$ & 0.815$\pm{\scriptsize 0.020}$ & $-0.80$ & 0.469 & 0.625 \\
+\hline
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+At 7\,s, \ac{mLSTM} increases recall for some classes (especially Class~1), but the changes are not statistically significant.
+
+\subsubsection{9-Second Windows}
+
+\begin{table}[htbp]
+\centering
+\caption{Statistical comparison of per-class recall: Linear Transformer vs.\ \ac{sLSTM} at 9\,s windows. Tests are paired across seeds ($n=5$, $\alpha=0.05$).}
+\label{tab:class_comparison_9s}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{l|c|c|c|c|c}
+\hline
+		\textbf{Class} & \textbf{Linear} & \textbf{\ac{sLSTM}} & \textbf{t-stat} & \textbf{p (t-test)} & \textbf{p (Wilcoxon)} \\
+\hline
+Class 0 & 0.017$\pm{\scriptsize 0.028}$ & 0.142$\pm{\scriptsize 0.094}$ & $-2.84$ & \textbf{0.047}* & 0.125 \\
+Class 1 & 0.404$\pm{\scriptsize 0.183}$ & 0.444$\pm{\scriptsize 0.173}$ & $-0.42$ & 0.698 & 0.812 \\
+Class 2 & 0.512$\pm{\scriptsize 0.117}$ & 0.516$\pm{\scriptsize 0.089}$ & $-0.07$ & 0.948 & 1.000 \\
+Class 3 & 0.616$\pm{\scriptsize 0.153}$ & 0.638$\pm{\scriptsize 0.170}$ & $-0.22$ & 0.839 & 1.000 \\
+Class 4 & 0.584$\pm{\scriptsize 0.054}$ & 0.576$\pm{\scriptsize 0.055}$ & 0.22 & 0.834 & 1.000 \\
+Class 5 & 0.774$\pm{\scriptsize 0.044}$ & 0.831$\pm{\scriptsize 0.045}$ & $-3.97$ & \textbf{0.016}* & 0.062 \\
+\hline
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+\end{table}
+
+At 9\,s, the paired t-test finds significant recall increases for Class~0 (rarest) and Class~5 (majority). The Wilcoxon p-values do not reach $0.05$, which suggests the result may be sensitive to individual seeds and should not be over-interpreted.
+
+\subsection{Full Confusion Matrix Pattern Analysis}
+\label{app:full_cm_pattern_analysis}
+
+While the per-class recall tests above focus on diagonal entries, this subsection addresses whether off-diagonal misclassification patterns—not just diagonal recall values—differ systematically across architectures. This helps determine if architecture choice influences not only how well each class is recognized, but also how errors are distributed across the other classes.
+
+\subsection{Methodology}
+
+For each window length, we compare the Linear Transformer baseline against the best-performing \ac{xLSTM} variant. Each confusion matrix is a \(6 \times 6\) matrix with 36 entries (6 classes). We test the null hypothesis that the confusion matrices are equivalent using:
+
+We perform element-wise paired t-tests for each of the 36 matrix positions across the five random seeds ($n=5$, $\alpha=0.05$). This identifies which specific confusion matrix cells differ significantly. Given the small sample size and exploratory nature of this analysis, we report uncorrected p-values and interpret findings cautiously.
+
+\subsection{Key Findings}
+
+\subsubsection{5-Second Windows: Linear Transformer vs. sLSTM}
+
+No confusion matrix cell shows a statistically significant difference at $\alpha = 0.05$. The largest differences appear in:
+\begin{itemize}
+\item True Class~5 $\to$ Predicted Class~5 (diagonal): $p=0.076$ (also reported in Section~\ref{app:per_class_recall_tests})
+\item True Class~1 $\to$ Predicted Class~5: slight reduction in misclassification for \ac{sLSTM} ($p \approx 0.15$)
+\end{itemize}
+
+The confusion patterns at 5\,s are statistically equivalent between the two architectures.
+
+\subsubsection{7-Second Windows: Linear Transformer vs. mLSTM}
+
+Similarly, no cell reaches statistical significance at $\alpha = 0.05$. The per-class recall improvements for \ac{mLSTM} (especially Class~1, as noted in Section~\ref{app:per_class_recall_tests}) do not translate into statistically significant changes in the full confusion matrix pattern at $n=5$.
+
+\subsubsection{9-Second Windows: Linear Transformer vs. sLSTM}
+
+At 9\,s, two diagonal entries were found significant in the per-class recall tests (Class~0: $p=0.047$, Class~5: $p=0.016$). These represent the strongest effects observed.
+
+Off-diagonal changes (misclassification redistribution) do not reach statistical significance, indicating that while \ac{sLSTM} improves recall for specific classes at 9\,s, the broader confusion pattern is not fundamentally different.
+
+\subsection{Interpretation}
+
+The statistical tests confirm that:
+\begin{itemize}
+\item \textbf{Overall confusion patterns are similar} across architectures at each window length, even when individual diagonal entries (per-class recall) show numerical improvements.
+\item \textbf{Small sample size ($n=5$ seeds)} limits statistical power for detecting differences in 36 matrix cells simultaneously.
+\item \textbf{Observed improvements} (e.g., \ac{sLSTM} at 5\,s and 9\,s, \ac{mLSTM} at 7\,s) are concentrated in per-class recall rather than systematic changes to misclassification patterns.
+\item \textbf{Class imbalance effects} persist across all architectures—majority-class bias and rare-class confusion remain consistent structural challenges regardless of architecture choice.
+\end{itemize}
+
+These findings suggest that architectural differences (Linear Transformer vs.\ \ac{xLSTM} variants) primarily influence classification thresholds and per-class sensitivity rather than fundamentally altering how errors are distributed across the confusion matrix. Future work with larger sample sizes would provide greater statistical power to detect subtle differences in confusion patterns.

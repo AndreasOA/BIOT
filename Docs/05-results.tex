@@ -1,446 +1,255 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-\cleardoubleoddpage%  Make sure to start each chapter on a new odd page
+\cleardoubleoddpage
 \chapter{Results and Analysis}
 \label{sec:results}
 
-This chapter presents the experimental results from evaluating \ac{xLSTM} variants in the \ac{BIOT} architecture for \ac{EEG} event classification using the \ac{TUEV} dataset. The experimental design systematically compares four architectural variants (\ac{sLSTM}, \ac{mLSTM}, combined \ac{mLSTM}+\ac{sLSTM}, and a Linear Transformer baseline) across three temporal window configurations (5\,s, 7\,s, 9\,s). Each configuration was run five times with different random seeds (10, 42, 123, 456, 999) to ensure statistical robustness.
+This chapter presents the experimental evaluation of the proposed \ac{xLSTM}
+architectures within the \ac{BIOT} framework for multi-class EEG event
+classification on the \ac{TUEV} dataset. We compare four model variants
+(\ac{sLSTM}, \ac{mLSTM}, combined \ac{mLSTM}+\ac{sLSTM}, and a Linear
+Transformer baseline) across three temporal window lengths (5\,s, 7\,s, 9\,s).
+Each configuration is trained with five random seeds to assess stability and
+statistical robustness.
 
-\subsection{Model Selection Criterion}
+%===============================================================================
+\section{Model Selection Criterion}
+\label{sec:model_selection_criterion}
 
-\textbf{All results use checkpoints selected by balanced accuracy, not validation loss.} The \ac{TUEV} dataset exhibits severe class imbalance (66.77\% majority class), causing validation loss to plateau and fluctuate after initial convergence. Models can minimize cross-entropy loss by biasing toward the majority class while achieving poor balanced accuracy. Since balanced accuracy equally weights all classes, it is the appropriate selection criterion for this imbalanced multi-class task. All reported metrics, confusion matrices, and statistical comparisons use balanced-accuracy checkpoints exclusively.
+All results reported in this chapter are derived from checkpoints selected by
+\textbf{balanced accuracy on the validation set}. This design choice is
+critical. The TUEV dataset is highly imbalanced (66.77\% majority class), and
+minimizing cross-entropy loss often results in models that primarily favor the
+majority class while suppressing minority classes without significant penalties
+in loss. Balanced accuracy weights each class equally, making it substantially
+more appropriate for performance assessment in this clinical classification
+setting. Unless stated otherwise, all metrics, confusion matrices, and
+statistical tests are based on the balanced-accuracy–selected checkpoints.
 
+%===============================================================================
 \section{Overall Performance Comparison}
+\label{sec:overall_performance}
 
-We analyze four key metrics (see Section~\ref{sec:evaluation_metrics} for definitions): balanced accuracy (robust to class imbalance), Cohen’s~\(\kappa\) (agreement beyond chance), weighted F1 (precision–recall harmonic mean weighted by support), and \ac{AUCPR} Macro (ranking quality for rare events). Overall accuracy is not emphasized because it is misleading under imbalance; when shown, it serves only for completeness in statistical tests.
+We evaluate four complementary metrics: balanced accuracy (robust to class
+imbalance), Cohen’s~\(\kappa\) (agreement beyond chance), weighted F1
+(performance weighted by class prevalence), and macro-\ac{AUCPR}, which is
+particularly relevant for rare-event detection. Figure formats rather than
+tables are used to emphasize trends, robustness, and variability.
 
-\subsection{Complete Performance Results}
+\subsection{Overview of Aggregate Performance}
 
-Table~\ref{tab:metrics_comparison} summarizes performance across all 60 runs (4 architectures~\(\times\) 3 windows~\(\times\) 5 seeds). Values are mean~\(\pm\)~standard deviation over the five seeds; bold indicates the best score within a given window length.
+Across all configurations, performance differences between architectures are
+observable but modest. \ac{xLSTM} variants generally outperform the Linear
+Transformer in macro-\ac{AUCPR}, indicating improved ranking capability for rare
+pathological events. However, the magnitude of these improvements is highly
+dependent on the temporal window and often comparable to between-seed variance.
+No model achieves a statistically significant advantage in the primary metric
+(balanced accuracy) at any window length.
 
-\begin{table}[htbp]
-\centering
-\caption{Performance comparison across architectures and temporal window configurations. Values are mean~\(\pm\)~std over five seeds using balanced-accuracy checkpointing. Boldface indicates the best value per window.}
-\label{tab:metrics_comparison}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{l | c | c | c | c | c}
-\hline
-	extbf{Architecture} & \textbf{Win.} & \textbf{Bal. Acc.} & \textbf{Cohen \(\kappa\)} & \textbf{F1 (W)} & \textbf{\ac{AUCPR} (Macro)} \\
-\hline
-Linear Transf. & 5s & $0.521 \pm {\scriptsize 0.041}$ & $0.457 \pm {\scriptsize 0.049}$ & $0.712 \pm {\scriptsize 0.034}$ & $0.468 \pm {\scriptsize 0.013}$ \\
-Linear Transf. & 7s & $0.501 \pm {\scriptsize 0.043}$ & $0.465 \pm {\scriptsize 0.030}$ & $0.717 \pm {\scriptsize 0.022}$ & $0.465 \pm {\scriptsize 0.039}$ \\
-Linear Transf. & 9s & $0.485 \pm {\scriptsize 0.037}$ & $0.425 \pm {\scriptsize 0.048}$ & $0.691 \pm {\scriptsize 0.031}$ & $0.453 \pm {\scriptsize 0.026}$ \\
-\hline
-\ac{mLSTM} & 5s & $0.509 \pm {\scriptsize 0.031}$ & $0.439 \pm {\scriptsize 0.037}$ & $0.707 \pm {\scriptsize 0.017}$ & $0.487 \pm {\scriptsize 0.030}$ \\
-\ac{mLSTM} & 7s & $\mathbf{0.507 \pm {\scriptsize 0.029}}$ & $\mathbf{0.474 \pm {\scriptsize 0.012}}$ & $\mathbf{0.727 \pm {\scriptsize 0.006}}$ & $0.484 \pm {\scriptsize 0.016}$ \\
-\ac{mLSTM} & 9s & $0.464 \pm {\scriptsize 0.066}$ & $0.422 \pm {\scriptsize 0.063}$ & $0.702 \pm {\scriptsize 0.029}$ & $0.459 \pm {\scriptsize 0.036}$ \\
-\hline
-\ac{sLSTM} & 5s & $\mathbf{0.522 \pm {\scriptsize 0.014}}$ & $\mathbf{0.471 \pm {\scriptsize 0.044}}$ & $\mathbf{0.720 \pm {\scriptsize 0.027}}$ & $\mathbf{0.513 \pm {\scriptsize 0.016}}$ \\
-\ac{sLSTM} & 7s & $0.485 \pm {\scriptsize 0.055}$ & $0.466 \pm {\scriptsize 0.091}$ & $\mathbf{0.720 \pm {\scriptsize 0.047}}$ & $\mathbf{0.493 \pm {\scriptsize 0.042}}$ \\
-\ac{sLSTM} & 9s & $\mathbf{0.525 \pm {\scriptsize 0.038}}$ & $\mathbf{0.479 \pm {\scriptsize 0.063}}$ & $\mathbf{0.726 \pm {\scriptsize 0.037}}$ & $\mathbf{0.486 \pm {\scriptsize 0.039}}$ \\
-\hline
-\ac{mLSTM}+\ac{sLSTM} & 5s & $0.500 \pm {\scriptsize 0.017}$ & $0.440 \pm {\scriptsize 0.050}$ & $0.705 \pm {\scriptsize 0.029}$ & $0.489 \pm {\scriptsize 0.013}$ \\
-\ac{mLSTM}+\ac{sLSTM} & 7s & $0.505 \pm {\scriptsize 0.028}$ & $0.443 \pm {\scriptsize 0.026}$ & $0.707 \pm {\scriptsize 0.016}$ & $0.479 \pm {\scriptsize 0.020}$ \\
-\ac{mLSTM}+\ac{sLSTM} & 9s & $0.501 \pm {\scriptsize 0.011}$ & $0.431 \pm {\scriptsize 0.045}$ & $0.701 \pm {\scriptsize 0.027}$ & $0.472 \pm {\scriptsize 0.023}$ \\
-\hline
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
+\subsection{Architectural Trends Across Windows}
 
-\paragraph{5\,s windows.} \ac{sLSTM} attains the best mean balanced accuracy ($52.15\% \pm 1.37\%$) with very low variability, substantially more stable than the Linear Transformer ($52.06\% \pm 4.06\%$). The combined model is stable ($50.03\% \pm 1.72\%$) but trails pure \ac{sLSTM}. \ac{mLSTM} is intermediate ($50.93\% \pm 3.14\%$).
+Figure~\ref{fig:architecture_window_aucpr_macro} summarizes macro-\ac{AUCPR}
+performance across models and temporal contexts.
 
-\paragraph{7\,s windows.} \ac{mLSTM} performs best ($50.66\% \pm 2.87\%$) and is the most stable in this regime. The Linear Transformer remains competitive ($50.08\% \pm 4.29\%$), while \ac{sLSTM} dips ($48.45\% \pm 5.50\%$). The combined model is again stable and near the middle ($50.46\% \pm 2.82\%$).
+At 5\,s windows, \ac{sLSTM} demonstrates the strongest and most stable
+performance, achieving higher medians with limited overlap relative to the
+Linear Transformer. This reflects improved detection quality particularly for
+rare classes and is consistent with the statistically significant difference
+reported in Section~\ref{sec:results_statistical_significance_summary}.
 
-\paragraph{9\,s windows.} \ac{sLSTM} rebounds to the top ($52.46\% \pm 3.81\%$); the combined model is remarkably stable ($50.10\% \pm 1.14\%$). The Linear Transformer decreases monotonically with context length ($48.45\% \pm 3.73\%$). \ac{mLSTM} degrades substantially ($46.40\% \pm 6.59\%$).
+At 7\,s windows, architectural performance differences diminish. All
+architectures exhibit overlapping distributions, indicating that improvements
+are small relative to random-seed variability. \ac{mLSTM} exhibits competitive
+central tendency but without clearly separating from the baseline.
 
-\subsection{Architectural Comparison (Across Windows)}
+At 9\,s windows, \ac{sLSTM} again trends higher than the Linear Transformer,
+though with greater dispersion. Extended context does not uniformly benefit all
+architectures; some configurations even degrade, suggesting diminishing returns
+from longer temporal windows for this task.
 
-Figure \ref{fig:architecture_window_aucpr_macro} summarizes macro-\ac{AUCPR} performance across architectures and temporal window lengths, aggregated over five random seeds per configuration. Higher \ac{AUCPR} values indicate improved performance on rare positive classes, which is particularly relevant for clinically important but infrequent EEG events.
+The combined \ac{mLSTM}+\ac{sLSTM} architecture remains consistently stable
+across windows but never achieves the top median value. In contrast, the Linear
+Transformer displays higher variability but remains competitive.
 
-Across all window lengths, \ac{xLSTM}-based architectures generally outperform the Linear Transformer baseline in terms of median \ac{AUCPR}, although the magnitude and consistency of improvement vary with temporal context. At 5 s, the \ac{sLSTM} exhibits the highest median \ac{AUCPR} with comparatively limited overlap with the Linear Transformer distribution, indicating a more consistent advantage at this shorter context length. This observation aligns with the statistically significant improvement reported in Table \ref{tab:statistical_significance_5s}.
+Overall, the plot indicates that \ac{xLSTM} architectures can provide benefits
+in rare-event ranking quality, particularly at shorter windows, but observed
+gains are window-dependent and not uniformly robust.
 
-At 7 s, performance differences between architectures become less pronounced. Both \ac{mLSTM} and \ac{sLSTM} maintain competitive median \ac{AUCPR} values, but their interquartile ranges overlap substantially with the Linear Transformer, suggesting that improvements are less robust relative to between-seed variability. At 9 s, the \ac{sLSTM} and combined \ac{mLSTM}+\ac{sLSTM} models retain moderately higher medians than the baseline but again with noticeable overlap, indicating that extended temporal context does not consistently yield performance gains for any architecture in \ac{AUCPR} terms.
-
-The combined \ac{mLSTM}+\ac{sLSTM} configuration generally shows relatively narrow performance dispersion across window lengths, indicating stable optimization behavior, although it does not achieve the highest median performance at any evaluated window. In contrast, the Linear Transformer displays larger variability, particularly at shorter windows, suggesting less stable training under the same conditions.
-
-Taken together, these results indicate that \ac{xLSTM} architectures can provide \ac{AUCPR} benefits over Linear Transformer baselines, especially at shorter window durations. However, the extent of improvement is window-dependent, and overlapping distributions at 7 s and 9 s imply that observed gains at longer windows should be interpreted with caution.\begin{figure}[htbp]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{images/architecture_window_aucpr_macro_box.png}
-\caption{\ac{AUCPR} Macro across architectures and temporal window configurations (5\,s, 7\,s, 9\,s). Boxplots show the distribution over five random seeds; grouped boxes correspond to window length, and colors denote the architecture. At $5\,\text{s}$, \ac{sLSTM} shows a higher median than the Linear Transformer with less overlap.}
+\caption{\ac{AUCPR} Macro across architectures and temporal windows. Boxplots
+represent distributions across five random seeds. Higher values indicate better
+rare-event ranking performance.}
 \label{fig:architecture_window_aucpr_macro}
 \end{figure}
 
-\section{Statistical Significance Testing}
-
-Pairwise statistical comparisons were conducted between the Linear Transformer baseline and the best-performing \ac{xLSTM} variant at each window length. As summarized in Section~\ref{sec:statistical_testing}, both paired t-tests and Wilcoxon signed-rank tests were applied across seeds ($n=5$, $\alpha=0.05$). At 5\,s and 9\,s windows, \ac{sLSTM} was the top-performing variant; at 7\,s, comparisons were made against \ac{mLSTM}. Tests were computed on per-seed results; tables report mean values for readability. Given the limited sample size, p-values should be interpreted cautiously and alongside effect magnitudes.
-
-\subsection{5-Second Windows}
-
-\begin{table}[htbp]
-\centering
-\caption{Linear Transformer vs.\ \ac{sLSTM} at 5\,s (balanced-accuracy checkpoints). Positive differences favor \ac{sLSTM}.}
-\label{tab:statistical_significance_5s}
-\footnotesize
-\begin{tabular}{l | c | c | c | c | c}
-\textbf{Metric} & \textbf{Lin. Transf.} & \textbf{\ac{sLSTM}} & \textbf{t-test p} & \textbf{Wilcoxon p} & \textbf{Interpretation} \\
-\hline
-Balanced Accuracy  & 0.521 & 0.522 & 0.974 & 0.812 & Equivalent \\
-Cohen's $\kappa$    & 0.457 & 0.471 & 0.583 & 0.438 & Higher, not significant \\
-Weighted F1         & 0.712 & 0.720 & 0.651 & 0.438 & Higher, not significant \\
-Accuracy            & 0.689 & 0.711 & 0.252 & 0.312 & Higher, not significant \\
-AUCPR (Macro)       & 0.468 & 0.513 & \textbf{0.005} & 0.062 & \textbf{Significant (t-test)} \\
-\hline
-\end{tabular}
-\end{table}
-
-\noindent\textbf{Summary.} At 5\,s, \ac{sLSTM} provides a statistically significant improvement in AUCPR, indicating enhanced ranking performance for rare classes. Other metrics remain statistically equivalent.
-
-\subsection{7-Second Windows}
-
-\begin{table}[htbp]
-\centering
-\caption{Linear Transformer vs.\ \ac{mLSTM} at 7\,s (balanced-accuracy checkpoints). Positive differences favor \ac{mLSTM}.}
-\label{tab:statistical_significance_7s}
-\footnotesize
-\begin{tabular}{l | c | c | c | c | c}
-\textbf{Metric} & \textbf{Lin. Transf.} & \textbf{\ac{mLSTM}} & \textbf{t-test p} & \textbf{Wilcoxon p} & \textbf{Interpretation} \\
-\hline
-Balanced Accuracy  & 0.501 & 0.507 & 0.749 & 0.812 & Equivalent \\
-Cohen's $\kappa$    & 0.465 & 0.474 & 0.394 & 0.438 & Equivalent \\
-Weighted F1         & 0.717 & 0.727 & 0.298 & 0.312 & Equivalent \\
-Accuracy            & 0.689 & 0.711 & 0.215 & 0.188 & Higher, not significant \\
-AUCPR (Macro)       & 0.465 & 0.484 & 0.315 & 0.438 & Higher, not significant \\
-\hline
-\end{tabular}
-\end{table}
-
-\noindent\textbf{Summary.} At 7\,s, \ac{mLSTM} achieves slightly higher mean performance across most metrics, but differences relative to the Linear Transformer remain statistically non-significant.
-
-\subsection{9-Second Windows}
-
-\begin{table}[htbp]
-\centering
-\caption{Linear Transformer vs.\ \ac{sLSTM} at 9\,s (balanced-accuracy checkpoints). Positive differences favor \ac{sLSTM}.}
-\label{tab:statistical_significance_9s}
-\footnotesize
-\begin{tabular}{l | c | c | c | c | c}
-\textbf{Metric} & \textbf{Lin. Transf.} & \textbf{\ac{sLSTM}} & \textbf{t-test p} & \textbf{Wilcoxon p} & \textbf{Interpretation} \\
-\hline
-Balanced Accuracy  & 0.485 & 0.525 & 0.119 & 0.188 & Higher, not significant \\
-Cohen's $\kappa$    & 0.425 & 0.479 & 0.055 & 0.062 & Marginal \\
-Weighted F1         & 0.691 & 0.726 & 0.073 & 0.062 & Marginal \\
-Accuracy            & 0.667 & 0.714 & \textbf{0.029} & 0.062 & \textbf{Significant (t-test)} \\
-AUCPR (Macro)       & 0.453 & 0.486 & 0.115 & 0.062 & Higher, not significant \\
-\hline
-\end{tabular}
-\end{table}
-
-\noindent\textbf{Summary.} At 9\,s, \ac{sLSTM} yields a statistically significant improvement in overall accuracy and consistent, though marginal, gains in $\kappa$ and weighted F1. Balanced accuracy improves in magnitude but does not reach significance.
-
-\subsection{Interpretation}
-
-\textbf{Window-dependent effects.} Performance benefits are window-specific. \ac{sLSTM} provides significant AUCPR improvements at short windows (5\,s) and significant accuracy gains at long windows (9\,s), whereas \ac{mLSTM} performs best numerically at 7\,s without reaching statistical significance.
-
-\textbf{Metric-specific effects.} Architectural changes primarily influence ranking quality and confidence calibration rather than class-balanced decision boundaries, as reflected by improvements in AUCPR and accuracy rather than balanced accuracy.
-
-\textbf{Practical relevance.} Effect sizes remain modest (generally $<5\%$ absolute). Combined with increased computational cost of \ac{xLSTM} variants, practical deployment benefits appear constrained unless architectural refinements further stabilize and amplify performance gains.
-
-\section{Computational Efficiency Analysis}
+%===============================================================================
+\section{Computational Efficiency}
 \label{sec:efficiency}
 
-Training time is a key practical constraint. Figure~\ref{fig:architecture_window_runtime_bar} visualizes the mean wall-clock time per complete run (\textbf{100 epochs}) under identical hardware and batch sizes for easier comparison.
+Model quality must be interpreted alongside computational cost. The mean
+training time per configuration (100 epochs, identical GPU setup) is visualized
+in Figure~\ref{fig:architecture_window_runtime_bar}.
+
+The Linear Transformer is clearly the most efficient model, completing training
+between 1.8–3.3 hours depending on window length, and offering a
+2.3–3.4\(\times\) speed advantage over \ac{xLSTM} variants. Runtime scales
+predictably and near-linearly with temporal context.
+
+Among \ac{xLSTM} architectures, \ac{sLSTM} is the most computationally
+efficient, with runtimes between approximately 4 and 7 hours. It therefore
+provides the most favorable accuracy–efficiency compromise.
+
+\ac{mLSTM} and the hybrid \ac{mLSTM}+\ac{sLSTM} models are significantly more
+expensive (5.5–11 hours). Runtime scaling is superlinear with longer temporal
+contexts, particularly for \ac{mLSTM}, and variability increases at 9\,s
+windows, reflecting less predictable optimization behavior.
+
+This analysis highlights that even when performance advantages exist, they must
+be weighed against substantially higher computational cost, particularly for
+\ac{mLSTM}-based designs.
+
+\textbf{Implementation Note:} The observed \ac{xLSTM} runtime characteristics diverge from expectations based on the original paper~\cite{beck2024xlstm}, which emphasizes that \ac{mLSTM} is ``fully parallelizable'' and designed to scale favorably. The \texttt{xlstm} Python package used in this work may contain implementation inefficiencies that do not fully realize the theoretical parallelization potential (see \url{https://github.com/NX-AI/xlstm/issues/58}). Therefore, these runtime measurements should be interpreted as specific to the current implementation rather than as definitive architectural characteristics. Optimized implementations may yield substantially improved efficiency.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{images/architecture_window_runtime_bar_hours.png}
-\caption{Training runtime across architectures and temporal window configurations. Bars show mean runtime per complete run (100 epochs) over five seeds; error bars indicate the standard deviation (in minutes). The y-axis is shown in hours.}
+\caption{Training runtime per full training run (100 epochs) for each
+architecture and temporal window configuration. Error bars show standard
+deviation across five seeds.}
 \label{fig:architecture_window_runtime_bar}
 \end{figure}
 
-\paragraph{Linear Transformer.} Fastest across all settings (1h49m–3h15m), delivering 2.3–3.4\(\times\) speedups over \ac{xLSTM}. Very low variance indicates predictable compute. Runtime scales near-linearly with window length.
+%===============================================================================
+\section{Class-Specific Performance}
+\label{sec:class_performance}
 
-\paragraph{\ac{sLSTM}.} Most efficient \ac{xLSTM} (4h10m–6h40m) and the best performance–efficiency compromise. Variance is moderate; scaling with window length is sublinear.
+Aggregate metrics conceal important differences in how architectures behave
+across clinically meaningful EEG event categories. Figure
+\ref{fig:class_recall_vs_window_box} summarizes per-class recall as a function
+of model and window length.
 
-\paragraph{\ac{mLSTM}.} Most expensive (5h30m–10h57m) with superlinear scaling and high variance at 9\,s, implying less predictable requirements as context grows.
+The dominant observation is performance stratification by class frequency. The
+majority class consistently exhibits the highest recall with minimal variance.
+Moderate-frequency classes maintain intermediate recall, while the rarest class
+achieves consistently poor recall across all architectures and windows. This
+indicates that dataset imbalance, rather than temporal modeling capability,
+remains the primary limiting factor.
 
-\paragraph{Combined.} Nearly identical to \ac{mLSTM} in cost, confirming that the 7:1 mixture is dominated by \ac{mLSTM} blocks. Variance is somewhat more controlled than pure \ac{mLSTM} at 9\,s.
+Architectural effects exist but are typically smaller than cross-seed
+variability at 5\,s and 7\,s windows. At 9\,s windows, \ac{sLSTM} displays
+improved recall in both the rarest and majority classes, although variability
+remains high. Importantly, extending temporal context alone does not
+systematically improve minority-class sensitivity.
 
-\section{Class-Specific Performance Analysis}
+To keep the main text compact, full normalized confusion matrices
+(mean~\(\pm\)~std) are provided in Appendix~\ref{app:confusion_matrices}.
 
-While aggregate metrics provide overall performance assessment, understanding class-level behavior is essential for evaluating model utility in clinical settings where minority classes often represent critical pathological events. We analyze normalized confusion matrices aggregated across all five random seeds, where diagonal entries represent per-class recall (sensitivity) and off-diagonal entries reveal systematic misclassification patterns. Values are reported as mean~\(\pm\)~standard deviation to capture both typical performance and cross-seed stability.
-
-\subsection{Per-Class Recall Patterns}
-
-\subsubsection{Baseline Performance at 5-Second Windows}
-
-\begin{table}[htbp]
+\begin{figure}[htbp]
 \centering
-\caption{Normalized confusion matrix for Linear Transformer at 5\,s windows, averaged over five seeds. Diagonal entries (bold) show per-class recall; off-diagonal entries show misclassification patterns.}
-\label{tab:cm_linear_5s}
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{True\textbackslash{}Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
-\midrule
-\textbf{Class 0} & \textbf{0.082}$\pm{\scriptsize 0.164}$ & 0.259$\pm{\scriptsize 0.135}$ & 0.140$\pm{\scriptsize 0.109}$ & 0.070$\pm{\scriptsize 0.067}$ & 0.123$\pm{\scriptsize 0.150}$ & 0.325$\pm{\scriptsize 0.082}$ \\
-\textbf{Class 1} & 0.027$\pm{\scriptsize 0.027}$ & \textbf{0.411}$\pm{\scriptsize 0.119}$ & 0.201$\pm{\scriptsize 0.035}$ & 0.010$\pm{\scriptsize 0.009}$ & 0.229$\pm{\scriptsize 0.114}$ & 0.122$\pm{\scriptsize 0.061}$ \\
-\textbf{Class 2} & 0.047$\pm{\scriptsize 0.022}$ & 0.144$\pm{\scriptsize 0.038}$ & \textbf{0.567}$\pm{\scriptsize 0.064}$ & 0.065$\pm{\scriptsize 0.041}$ & 0.063$\pm{\scriptsize 0.035}$ & 0.113$\pm{\scriptsize 0.037}$ \\
-\textbf{Class 3} & 0.005$\pm{\scriptsize 0.003}$ & 0.002$\pm{\scriptsize 0.005}$ & 0.022$\pm{\scriptsize 0.019}$ & \textbf{0.664}$\pm{\scriptsize 0.046}$ & 0.086$\pm{\scriptsize 0.045}$ & 0.221$\pm{\scriptsize 0.034}$ \\
-\textbf{Class 4} & 0.007$\pm{\scriptsize 0.006}$ & 0.006$\pm{\scriptsize 0.005}$ & 0.029$\pm{\scriptsize 0.029}$ & 0.038$\pm{\scriptsize 0.020}$ & \textbf{0.605}$\pm{\scriptsize 0.099}$ & 0.316$\pm{\scriptsize 0.088}$ \\
-\textbf{Class 5} & 0.029$\pm{\scriptsize 0.018}$ & 0.011$\pm{\scriptsize 0.005}$ & 0.047$\pm{\scriptsize 0.011}$ & 0.029$\pm{\scriptsize 0.014}$ & 0.089$\pm{\scriptsize 0.034}$ & \textbf{0.794}$\pm{\scriptsize 0.030}$ \\
-\bottomrule
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
+\includegraphics[width=0.95\textwidth]{images/class_recall_vs_window_box.png}
+\caption{Per-class recall across architectures and temporal windows. Boxplots
+show distributions over five random seeds.}
+\label{fig:class_recall_vs_window_box}
+\end{figure}
 
-The baseline reveals severe performance stratification by class frequency. Class~0 (1.93\% of training samples) achieves only 8.2\% mean recall with standard deviation (16.4\%) exceeding the mean, indicating highly unstable predictions dominated by random seed effects. The majority of Class~0 instances are misclassified as Class~5 (32.5\%) or Class~1 (25.9\%), suggesting the model defaults to more frequent classes when confronted with rare patterns.
+%===============================================================================
+\section{Statistical Significance Summary}
+\label{sec:results_statistical_significance_summary}
 
-Moderate-frequency classes show intermediate performance: Class~1 (41.1\% recall), Class~2 (56.7\%), Class~3 (66.4\%), and Class~4 (60.5\%). Class~3 and Class~4 exhibit substantial confusion with Class~5 (22.1\% and 31.6\% respectively), reflecting the challenge of discriminating artifact patterns from background activity. The majority class (Class~5, 66.77\% of samples) achieves 79.4\% recall with low variance (3.0\%), demonstrating stable high performance on frequent patterns.
+Paired statistical testing was conducted between the Linear Transformer and the
+best-performing \ac{xLSTM} variant at each window (paired t-test and Wilcoxon
+signed-rank test, \(n=5\), \(\alpha = 0.05\)). Full tables are provided in
+Appendix~\ref{app:statistical_significance_testing}.
 
-\subsubsection{xLSTM Performance at Optimal Configurations}
+Only two effects reach significance in the paired t-test:
+\begin{itemize}
+\item \ac{sLSTM} improves macro-\ac{AUCPR} at 5\,s.
+\item \ac{sLSTM} improves overall accuracy at 9\,s.
+\end{itemize}
 
-\begin{table}[htbp]
-\centering
-\caption{Normalized confusion matrix for \ac{sLSTM} at 5\,s windows, averaged over five seeds.}
-\label{tab:cm_slstm_5s}
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{True\textbackslash{}Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
-\midrule
-\textbf{Class 0} & \textbf{0.051}$\pm{\scriptsize 0.078}$ & 0.400$\pm{\scriptsize 0.058}$ & 0.238$\pm{\scriptsize 0.022}$ & 0.056$\pm{\scriptsize 0.023}$ & 0.062$\pm{\scriptsize 0.059}$ & 0.194$\pm{\scriptsize 0.085}$ \\
-\textbf{Class 1} & 0.027$\pm{\scriptsize 0.018}$ & \textbf{0.420}$\pm{\scriptsize 0.143}$ & 0.184$\pm{\scriptsize 0.015}$ & 0.007$\pm{\scriptsize 0.005}$ & 0.108$\pm{\scriptsize 0.063}$ & 0.255$\pm{\scriptsize 0.090}$ \\
-\textbf{Class 2} & 0.093$\pm{\scriptsize 0.060}$ & 0.116$\pm{\scriptsize 0.062}$ & \textbf{0.525}$\pm{\scriptsize 0.095}$ & 0.047$\pm{\scriptsize 0.044}$ & 0.077$\pm{\scriptsize 0.025}$ & 0.142$\pm{\scriptsize 0.052}$ \\
-\textbf{Class 3} & 0.004$\pm{\scriptsize 0.008}$ & 0.000$\pm{\scriptsize 0.000}$ & 0.012$\pm{\scriptsize 0.019}$ & \textbf{0.664}$\pm{\scriptsize 0.120}$ & 0.097$\pm{\scriptsize 0.042}$ & 0.224$\pm{\scriptsize 0.086}$ \\
-\textbf{Class 4} & 0.001$\pm{\scriptsize 0.001}$ & 0.010$\pm{\scriptsize 0.007}$ & 0.011$\pm{\scriptsize 0.006}$ & 0.030$\pm{\scriptsize 0.016}$ & \textbf{0.643}$\pm{\scriptsize 0.057}$ & 0.305$\pm{\scriptsize 0.053}$ \\
-\textbf{Class 5} & 0.017$\pm{\scriptsize 0.018}$ & 0.018$\pm{\scriptsize 0.007}$ & 0.030$\pm{\scriptsize 0.013}$ & 0.011$\pm{\scriptsize 0.006}$ & 0.097$\pm{\scriptsize 0.020}$ & \textbf{0.826}$\pm{\scriptsize 0.015}$ \\
-\bottomrule
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
+No configuration achieves statistical significance for the primary metric
+(balanced accuracy). Wilcoxon tests generally do not confirm significance,
+indicating these should be interpreted as indicative \emph{trends} rather than
+strong evidence. Effect sizes remain modest (<5\% absolute improvement).
 
-Comparing \ac{sLSTM} to the baseline reveals minimal architectural impact on class-specific discrimination. Class~0 recall actually decreases (5.1\% vs.\ 8.2\%), though neither value represents clinically useful performance. The primary difference emerges in the majority class: \ac{sLSTM} achieves 82.6\% recall on Class~5 with substantially lower variance (1.5\% vs.\ 3.0\%), consistent with its superior overall optimization stability. Intermediate classes show nearly identical recall patterns, with differences well within cross-seed variance.
+\subsection{Class-Specific Performance}
 
-\subsubsection{Performance at 7-Second Windows}
+Per-class recall tests (Appendix~\ref{app:per_class_recall_tests}) reveal that
+architectural differences are largely concentrated in specific classes rather
+than uniformly distributed:
 
-At 7\,s windows, architectural differences become more pronounced. Table~\ref{tab:cm_linear_7s} shows the Linear Transformer baseline at this window length.
+\begin{itemize}
+\item \textbf{5-second windows:} No per-class recall differences reach
+statistical significance. The strongest trend appears in the majority class
+(Class~5), which improves for \ac{sLSTM} (\(p=0.076\), paired t-test), but
+remains above the significance threshold.
 
-\begin{table}[htbp]
-\centering
-\caption{Normalized confusion matrix for Linear Transformer at 7\,s windows, averaged over five seeds.}
-\label{tab:cm_linear_7s}
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{True\textbackslash{}Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
-\midrule
-\textbf{Class 0} & \textbf{0.066}$\pm{\scriptsize 0.089}$ & 0.383$\pm{\scriptsize 0.130}$ & 0.086$\pm{\scriptsize 0.039}$ & 0.090$\pm{\scriptsize 0.043}$ & 0.141$\pm{\scriptsize 0.155}$ & 0.234$\pm{\scriptsize 0.036}$ \\
-\textbf{Class 1} & 0.028$\pm{\scriptsize 0.028}$ & \textbf{0.485}$\pm{\scriptsize 0.117}$ & 0.191$\pm{\scriptsize 0.070}$ & 0.008$\pm{\scriptsize 0.009}$ & 0.235$\pm{\scriptsize 0.114}$ & 0.053$\pm{\scriptsize 0.017}$ \\
-\textbf{Class 2} & 0.079$\pm{\scriptsize 0.071}$ & 0.181$\pm{\scriptsize 0.096}$ & \textbf{0.466}$\pm{\scriptsize 0.100}$ & 0.088$\pm{\scriptsize 0.049}$ & 0.065$\pm{\scriptsize 0.016}$ & 0.119$\pm{\scriptsize 0.061}$ \\
-\textbf{Class 3} & 0.002$\pm{\scriptsize 0.004}$ & 0.009$\pm{\scriptsize 0.009}$ & 0.016$\pm{\scriptsize 0.013}$ & \textbf{0.593}$\pm{\scriptsize 0.082}$ & 0.104$\pm{\scriptsize 0.051}$ & 0.275$\pm{\scriptsize 0.061}$ \\
-\textbf{Class 4} & 0.002$\pm{\scriptsize 0.003}$ & 0.011$\pm{\scriptsize 0.009}$ & 0.013$\pm{\scriptsize 0.011}$ & 0.071$\pm{\scriptsize 0.028}$ & \textbf{0.606}$\pm{\scriptsize 0.073}$ & 0.296$\pm{\scriptsize 0.092}$ \\
-\textbf{Class 5} & 0.022$\pm{\scriptsize 0.009}$ & 0.015$\pm{\scriptsize 0.014}$ & 0.034$\pm{\scriptsize 0.010}$ & 0.033$\pm{\scriptsize 0.017}$ & 0.107$\pm{\scriptsize 0.037}$ & \textbf{0.788}$\pm{\scriptsize 0.066}$ \\
-\bottomrule
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
+\item \textbf{7-second windows:} \ac{mLSTM} shows numerical improvements in
+recall for several classes, particularly Class~1, but none reach statistical
+significance. Architectural effects are fully absorbed by cross-seed variance.
 
-The Linear Transformer at 7\,s maintains relatively stable performance across most classes, with Class~1 achieving 48.5\% recall, slightly higher than at 5\,s. However, Class~0 performance remains poor at 6.6\%, with high variance indicating continued instability on rare classes.
+\item \textbf{9-second windows:} \ac{sLSTM} achieves statistically significant
+improvements in per-class recall for both the rarest class (Class~0,
+\(p=0.047\)) and the majority class (Class~5, \(p=0.016\)) according to the
+paired t-test. However, the corresponding Wilcoxon tests do not confirm these
+findings (\(p=0.125\) and \(p=0.062\), respectively), suggesting sensitivity to
+individual seed behavior and warranting cautious interpretation.
+\end{itemize}
 
-\begin{table}[htbp]
-\centering
-\caption{Normalized confusion matrix for \ac{mLSTM} at 7\,s windows, averaged over five seeds. Best overall performance at this window length.}
-\label{tab:cm_mlstm_7s}
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{True\textbackslash{}Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
-\midrule
-\textbf{Class 0} & \textbf{0.083}$\pm{\scriptsize 0.108}$ & 0.425$\pm{\scriptsize 0.115}$ & 0.044$\pm{\scriptsize 0.031}$ & 0.139$\pm{\scriptsize 0.061}$ & 0.019$\pm{\scriptsize 0.022}$ & 0.289$\pm{\scriptsize 0.053}$ \\
-\textbf{Class 1} & 0.030$\pm{\scriptsize 0.028}$ & \textbf{0.532}$\pm{\scriptsize 0.091}$ & 0.141$\pm{\scriptsize 0.037}$ & 0.010$\pm{\scriptsize 0.006}$ & 0.114$\pm{\scriptsize 0.078}$ & 0.171$\pm{\scriptsize 0.112}$ \\
-\textbf{Class 2} & 0.076$\pm{\scriptsize 0.053}$ & 0.137$\pm{\scriptsize 0.030}$ & \textbf{0.483}$\pm{\scriptsize 0.087}$ & 0.053$\pm{\scriptsize 0.028}$ & 0.100$\pm{\scriptsize 0.026}$ & 0.150$\pm{\scriptsize 0.043}$ \\
-\textbf{Class 3} & 0.002$\pm{\scriptsize 0.005}$ & 0.007$\pm{\scriptsize 0.009}$ & 0.016$\pm{\scriptsize 0.016}$ & \textbf{0.579}$\pm{\scriptsize 0.036}$ & 0.160$\pm{\scriptsize 0.021}$ & 0.235$\pm{\scriptsize 0.052}$ \\
-\textbf{Class 4} & 0.005$\pm{\scriptsize 0.005}$ & 0.011$\pm{\scriptsize 0.010}$ & 0.012$\pm{\scriptsize 0.012}$ & 0.008$\pm{\scriptsize 0.009}$ & \textbf{0.546}$\pm{\scriptsize 0.077}$ & 0.417$\pm{\scriptsize 0.064}$ \\
-\textbf{Class 5} & 0.028$\pm{\scriptsize 0.017}$ & 0.024$\pm{\scriptsize 0.013}$ & 0.020$\pm{\scriptsize 0.007}$ & 0.006$\pm{\scriptsize 0.003}$ & 0.106$\pm{\scriptsize 0.010}$ & \textbf{0.815}$\pm{\scriptsize 0.020}$ \\
-\bottomrule
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
+Importantly, off-diagonal confusion matrix patterns show no statistically significant differences
+(Appendix~\ref{app:full_cm_pattern_analysis}), indicating that architectural
+choice primarily affects recognition quality within classes rather than
+systematically altering misclassification patterns between classes.
 
-\ac{mLSTM} at 7\,s achieves the highest Class~1 recall across all configurations (53.2\%), suggesting matrix memory better captures patterns in this moderately frequent class at intermediate sequence lengths. However, Class~0 remains problematic (8.3\%), and Class~4 recall drops to 54.6\% with increased confusion with Class~5 (41.7\%), the highest misclassification rate observed for this class pair. This trade-off pattern—improved performance on some classes at the expense of others—explains why \ac{mLSTM}'s aggregate balanced accuracy remains competitive without clearly dominating.
 
-\subsubsection{Performance at 9-Second Windows}
-
-At 9\,s windows, the performance landscape shifts again. Table~\ref{tab:cm_linear_9s} shows the Linear Transformer baseline at this extended window length.
-
-\begin{table}[htbp]
-\centering
-\caption{Normalized confusion matrix for Linear Transformer at 9\,s windows, averaged over five seeds.}
-\label{tab:cm_linear_9s}
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{True\textbackslash{}Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
-\midrule
-\textbf{Class 0} & \textbf{0.017}$\pm{\scriptsize 0.028}$ & 0.349$\pm{\scriptsize 0.121}$ & 0.240$\pm{\scriptsize 0.069}$ & 0.078$\pm{\scriptsize 0.061}$ & 0.031$\pm{\scriptsize 0.048}$ & 0.286$\pm{\scriptsize 0.049}$ \\
-\textbf{Class 1} & 0.007$\pm{\scriptsize 0.005}$ & \textbf{0.404}$\pm{\scriptsize 0.183}$ & 0.270$\pm{\scriptsize 0.076}$ & 0.008$\pm{\scriptsize 0.008}$ & 0.175$\pm{\scriptsize 0.102}$ & 0.135$\pm{\scriptsize 0.076}$ \\
-\textbf{Class 2} & 0.041$\pm{\scriptsize 0.024}$ & 0.162$\pm{\scriptsize 0.075}$ & \textbf{0.512}$\pm{\scriptsize 0.117}$ & 0.099$\pm{\scriptsize 0.060}$ & 0.053$\pm{\scriptsize 0.040}$ & 0.134$\pm{\scriptsize 0.068}$ \\
-\textbf{Class 3} & 0.009$\pm{\scriptsize 0.012}$ & 0.007$\pm{\scriptsize 0.010}$ & 0.019$\pm{\scriptsize 0.010}$ & \textbf{0.616}$\pm{\scriptsize 0.153}$ & 0.068$\pm{\scriptsize 0.048}$ & 0.281$\pm{\scriptsize 0.130}$ \\
-\textbf{Class 4} & 0.008$\pm{\scriptsize 0.005}$ & 0.008$\pm{\scriptsize 0.012}$ & 0.022$\pm{\scriptsize 0.012}$ & 0.061$\pm{\scriptsize 0.041}$ & \textbf{0.584}$\pm{\scriptsize 0.054}$ & 0.317$\pm{\scriptsize 0.052}$ \\
-\textbf{Class 5} & 0.031$\pm{\scriptsize 0.019}$ & 0.012$\pm{\scriptsize 0.009}$ & 0.049$\pm{\scriptsize 0.018}$ & 0.036$\pm{\scriptsize 0.028}$ & 0.099$\pm{\scriptsize 0.020}$ & \textbf{0.774}$\pm{\scriptsize 0.044}$ \\
-\bottomrule
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
-
-The Linear Transformer at 9\,s shows continued degradation in Class~0 (1.7\% recall) and substantial decline in Class~5 (77.4\%, down from 79.4\% at 5\,s and 78.8\% at 7\,s). Class~1 recall also drops to 40.4\%, indicating that extended context length degrades the baseline's ability to maintain performance across classes. This monotonic decline with window length suggests attention mechanisms struggle to effectively leverage longer temporal contexts in this task.
-
-\begin{table}[htbp]
-\centering
-\caption{Normalized confusion matrix for \ac{sLSTM} at 9\,s windows, averaged over five seeds. Best overall balanced accuracy at this window length.}
-\label{tab:cm_slstm_9s}
-\small
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{True\textbackslash{}Pred} & \textbf{Class 0} & \textbf{Class 1} & \textbf{Class 2} & \textbf{Class 3} & \textbf{Class 4} & \textbf{Class 5} \\
-\midrule
-\textbf{Class 0} & \textbf{0.142}$\pm{\scriptsize 0.094}$ & 0.371$\pm{\scriptsize 0.144}$ & 0.223$\pm{\scriptsize 0.151}$ & 0.096$\pm{\scriptsize 0.061}$ & 0.014$\pm{\scriptsize 0.022}$ & 0.153$\pm{\scriptsize 0.075}$ \\
-\textbf{Class 1} & 0.047$\pm{\scriptsize 0.058}$ & \textbf{0.444}$\pm{\scriptsize 0.173}$ & 0.238$\pm{\scriptsize 0.118}$ & 0.007$\pm{\scriptsize 0.010}$ & 0.078$\pm{\scriptsize 0.041}$ & 0.185$\pm{\scriptsize 0.153}$ \\
-\textbf{Class 2} & 0.047$\pm{\scriptsize 0.030}$ & 0.170$\pm{\scriptsize 0.015}$ & \textbf{0.516}$\pm{\scriptsize 0.089}$ & 0.059$\pm{\scriptsize 0.043}$ & 0.061$\pm{\scriptsize 0.041}$ & 0.146$\pm{\scriptsize 0.071}$ \\
-\textbf{Class 3} & 0.020$\pm{\scriptsize 0.038}$ & 0.002$\pm{\scriptsize 0.004}$ & 0.006$\pm{\scriptsize 0.011}$ & \textbf{0.638}$\pm{\scriptsize 0.170}$ & 0.075$\pm{\scriptsize 0.080}$ & 0.258$\pm{\scriptsize 0.106}$ \\
-\textbf{Class 4} & 0.011$\pm{\scriptsize 0.008}$ & 0.015$\pm{\scriptsize 0.009}$ & 0.015$\pm{\scriptsize 0.011}$ & 0.038$\pm{\scriptsize 0.039}$ & \textbf{0.576}$\pm{\scriptsize 0.055}$ & 0.345$\pm{\scriptsize 0.048}$ \\
-\textbf{Class 5} & 0.022$\pm{\scriptsize 0.010}$ & 0.029$\pm{\scriptsize 0.006}$ & 0.027$\pm{\scriptsize 0.017}$ & 0.013$\pm{\scriptsize 0.014}$ & 0.078$\pm{\scriptsize 0.036}$ & \textbf{0.831}$\pm{\scriptsize 0.045}$ \\
-\bottomrule
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
-
-At 9\,s windows, \ac{sLSTM} achieves 14.2\% recall on Class~0, the highest observed across all configurations. However, the high standard deviation (9.4\%, representing 66\% of the mean) indicates this improvement is driven by occasional favorable seeds rather than systematic architectural advantage. Class~5 recall remains strong (83.1\%), and intermediate classes show performance comparable to 5\,s configurations. The recovery from the 7\,s performance dip suggests \ac{sLSTM}'s scalar memory mechanisms operate more effectively at both short and extended sequence lengths, with a performance valley at intermediate scales.
-
-\subsection{Statistical Comparison of Architectural Effects}
-
-To rigorously assess whether observed class-level differences reflect genuine architectural advantages or random variation, we perform paired statistical tests comparing Linear Transformer and \ac{sLSTM} at each window length.
-
-\subsubsection{5-Second Windows}
-
-\begin{table}[htbp]
-\centering
-\caption{Statistical comparison of per-class recall: Linear Transformer vs.\ \ac{sLSTM} at 5\,s windows. Tests are paired across seeds; \(\alpha=0.05\).}
-\label{tab:class_comparison_5s}
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{l|c|c|c|c|c}
-\hline
-\textbf{Class} & \textbf{Linear} & \textbf{\ac{sLSTM}} & \textbf{t-stat} & \textbf{p (t-test)} & \textbf{p (Wilcoxon)} \\
-\hline
-Class 0 & 0.082$\pm{\scriptsize 0.164}$ & 0.051$\pm{\scriptsize 0.078}$ & 0.33 & 0.756 & 1.000 \\
-Class 1 & 0.411$\pm{\scriptsize 0.119}$ & 0.420$\pm{\scriptsize 0.143}$ & $-0.13$ & 0.902 & 0.812 \\
-Class 2 & 0.567$\pm{\scriptsize 0.064}$ & 0.525$\pm{\scriptsize 0.095}$ & 0.92 & 0.410 & 0.312 \\
-Class 3 & 0.664$\pm{\scriptsize 0.046}$ & 0.664$\pm{\scriptsize 0.120}$ & 0.01 & 0.989 & 1.000 \\
-Class 4 & 0.605$\pm{\scriptsize 0.099}$ & 0.643$\pm{\scriptsize 0.057}$ & $-0.71$ & 0.515 & 0.812 \\
-Class 5 & 0.794$\pm{\scriptsize 0.030}$ & 0.826$\pm{\scriptsize 0.015}$ & $-2.38$ & 0.076 & 0.062 \\
-\hline
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
-
-At 5\,s windows, no class-level differences reach statistical significance at \(\alpha=0.05\). Class~5 shows the strongest trend toward \ac{sLSTM} advantage (recall difference: +3.2 percentage points, p=0.076), approaching but not achieving significance. This near-significant improvement in majority-class recall, combined with marginal differences in other classes, explains why \ac{sLSTM} achieves significantly better \ac{AUCPR} Macro (ranking quality; Section~\ref{tab:statistical_significance_5s}) without significant balanced accuracy improvement. The architectural benefit manifests primarily in confidence calibration for the majority class rather than improved discrimination of minority classes.
-
-\textbf{In summary,} at 5\,s windows, \ac{sLSTM} provides no significant class-level improvements but shows trends toward better majority-class performance and ranking quality.
-
-\subsubsection{7-Second Windows}
-
-\begin{table}[htbp]
-\centering
-\caption{Statistical comparison of per-class recall: Linear Transformer vs.\ \ac{mLSTM} at 7\,s windows.}
-\label{tab:class_comparison_7s}
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{l|c|c|c|c|c}
-\hline
-\textbf{Class} & \textbf{Linear} & \textbf{\ac{mLSTM}} & \textbf{t-stat} & \textbf{p (t-test)} & \textbf{p (Wilcoxon)} \\
-\hline
-Class 0 & 0.066$\pm{\scriptsize 0.089}$ & 0.083$\pm{\scriptsize 0.108}$ & $-0.29$ & 0.789 & 0.625 \\
-Class 1 & 0.485$\pm{\scriptsize 0.117}$ & 0.532$\pm{\scriptsize 0.091}$ & $-1.05$ & 0.354 & 0.438 \\
-Class 2 & 0.466$\pm{\scriptsize 0.100}$ & 0.483$\pm{\scriptsize 0.087}$ & $-0.32$ & 0.763 & 0.812 \\
-Class 3 & 0.593$\pm{\scriptsize 0.082}$ & 0.579$\pm{\scriptsize 0.036}$ & 0.32 & 0.764 & 1.000 \\
-Class 4 & 0.606$\pm{\scriptsize 0.073}$ & 0.546$\pm{\scriptsize 0.077}$ & 0.96 & 0.390 & 0.812 \\
-Class 5 & 0.788$\pm{\scriptsize 0.066}$ & 0.815$\pm{\scriptsize 0.020}$ & $-0.80$ & 0.469 & 0.625 \\
-\hline
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
-
-At 7\,s windows, no class-level differences approach significance (all p>0.35). \ac{mLSTM} shows numerically higher recall for Classes~0, 1, 2, and 5, with the largest improvement in Class~1 (+4.7 percentage points, p=0.354). However, Class~4 recall decreases substantially ($-6.0$ percentage points, p=0.390), indicating a trade-off where matrix memory improves performance on some classes at the expense of others. This mixed pattern explains why \ac{mLSTM}'s aggregate balanced accuracy remains competitive without clearly dominating (Section~\ref{tab:statistical_significance_7s}). The higher Class~1 recall (53.2\%, the best across all configurations) suggests matrix memory mechanisms are particularly effective for this moderately frequent class at intermediate sequence lengths.
-
-\textbf{In summary,} at 7\,s windows, \ac{mLSTM} achieves the best Class~1 recall across all configurations but shows trade-offs in Class~4, resulting in no significant aggregate advantages over the Linear Transformer baseline.
-
-\subsubsection{9-Second Windows}
-
-\begin{table}[htbp]
-\centering
-\caption{Statistical comparison of per-class recall: Linear Transformer vs.\ \ac{sLSTM} at 9\,s windows.}
-\label{tab:class_comparison_9s}
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{l|c|c|c|c|c}
-\hline
-\textbf{Class} & \textbf{Linear} & \textbf{\ac{sLSTM}} & \textbf{t-stat} & \textbf{p (t-test)} & \textbf{p (Wilcoxon)} \\
-\hline
-Class 0 & 0.017$\pm{\scriptsize 0.028}$ & 0.142$\pm{\scriptsize 0.094}$ & $-2.84$ & \textbf{0.047}* & 0.125 \\
-Class 1 & 0.404$\pm{\scriptsize 0.183}$ & 0.444$\pm{\scriptsize 0.173}$ & $-0.42$ & 0.698 & 0.812 \\
-Class 2 & 0.512$\pm{\scriptsize 0.117}$ & 0.516$\pm{\scriptsize 0.089}$ & $-0.07$ & 0.948 & 1.000 \\
-Class 3 & 0.616$\pm{\scriptsize 0.153}$ & 0.638$\pm{\scriptsize 0.170}$ & $-0.22$ & 0.839 & 1.000 \\
-Class 4 & 0.584$\pm{\scriptsize 0.054}$ & 0.576$\pm{\scriptsize 0.055}$ & 0.22 & 0.834 & 1.000 \\
-Class 5 & 0.774$\pm{\scriptsize 0.044}$ & 0.831$\pm{\scriptsize 0.045}$ & $-3.97$ & \textbf{0.016}* & 0.062 \\
-\hline
-\end{tabular}
-\setlength{\tabcolsep}{6pt}
-\end{table}
-
-At 9\,s windows, \ac{sLSTM} achieves statistically significant improvements in Class~0 (p=0.047; +12.5 percentage points) and Class~5 (p=0.016; +5.7 percentage points). The Class~0 improvement is substantial in relative terms (8.3× increase from 1.7\% to 14.2\%), representing the first instance where any architecture achieves double-digit recall on the rarest class. However, the clinical utility remains questionable: 14.2\% recall means 85.8\% of minority-class instances are still misclassified. The high standard deviation (9.4\%) relative to the mean indicates this improvement is highly variable across seeds, with the Wilcoxon test (p=0.125) not reaching significance, suggesting potential sensitivity to outlier seeds.
-
-The Class~5 improvement is more robust, with both parametric and non-parametric tests approaching or reaching significance. This majority-class advantage combines with marginal improvements across intermediate classes (Classes~1–3 show small non-significant increases) to produce the significant overall accuracy improvement observed in aggregate metrics (Section~\ref{tab:statistical_significance_9s}). Notably, Class~4 shows no improvement, maintaining the pattern where extended context benefits some but not all classes.
-
-\textbf{In summary,} at 9\,s windows, \ac{sLSTM} achieves significant improvements in the rarest class (Class~0) and the majority class (Class~5), driving its overall performance recovery at extended context lengths.
-
+%===============================================================================
 \section{Summary of Key Findings}
+\label{sec:key_findings}
 
 \subsection{Performance Characteristics}
 
 \begin{itemize}
-\item \textbf{Best overall (balanced acc.).} \ac{sLSTM} leads at 5\,s ($52.15\% \pm 1.37\%$) and 9\,s ($52.46\% \pm 3.81\%$), but drops at 7\,s ($48.45\% \pm 5.50\%$), indicating sequence-length sensitivity.
-\item \textbf{Most consistent.} The combined \ac{mLSTM}+\ac{sLSTM} is highly stable across windows ($50.03$–$50.46\%$), with the lowest variability at 9\,s ($\pm 1.14\%$), but never achieves the top score.
-\item \textbf{Window-specific peak.} \ac{mLSTM} peaks at 7\,s ($50.66\% \pm 2.87\%$) and collapses at 9\,s ($46.40\% \pm 6.59\%$).
-\item \textbf{Baseline competitiveness.} The Linear Transformer is competitive at 5–7\,s while training 2.3–3.4\(\times\) faster; it declines with longer context.
+\item \ac{sLSTM} provides the most consistent performance benefits, particularly
+at 5\,s and 9\,s, although improvements are modest.
+\item \ac{mLSTM} peaks at 7\,s but degrades substantially at 9\,s.
+\item The combined \ac{mLSTM}+\ac{sLSTM} model is stable but never dominant.
+\item The Linear Transformer remains competitive while being dramatically faster.
 \end{itemize}
 
-\subsection{Statistical Significance}
+\subsection{Statistical Interpretation}
 
 \begin{itemize}
-\item \textbf{Window dependence.} \ac{sLSTM} achieves significant \ac{AUCPR} gains at 5\,s (p=0.005) and significant accuracy gains at 9\,s (p=0.029); no significant differences at 7\,s.
-\item \textbf{Metric dependence.} Gains shift from ranking quality (short windows) to decision accuracy (long windows). Balanced accuracy never reaches significance.
-\item \textbf{Effect sizes.} All significant improvements are modest (<5\% absolute), tempering practical impact.
+\item Significant effects are rare and metric-dependent.
+\item No architecture significantly outperforms the baseline in balanced accuracy.
+\item Observed improvements should be treated as trends rather than definitive
+evidence.
 \end{itemize}
 
 \subsection{Architectural Insights}
 
 \begin{itemize}
-\item \textbf{Sequence-length sensitivity.} \ac{sLSTM} and \ac{mLSTM} prefer different operating ranges (U-shaped vs.\ inverted-U), pointing to distinct memory–timescale interactions.
-\item \textbf{Hybrid trade-offs.} A fixed 7:1 \ac{mLSTM}:\ac{sLSTM} mix prioritizes stability but mutes peak performance; alternative ratios or adaptive mixing merit exploration.
-\item \textbf{Compute scaling.} \ac{xLSTM} variants incur 2–3\(\times\) training cost over the baseline; \ac{mLSTM} scales superlinearly with window length.
+\item Architectural benefits are window-dependent and sensitive to temporal context.
+\item \ac{sLSTM} benefits shorter and longer sequences, whereas \ac{mLSTM}
+appears tuned to intermediate context. Note that ``shorter'' and ``longer'' are
+relative terms within the 5--9\,s range tested here; sequences could extend
+considerably beyond this range, so these observations should not be
+over-generalized as universal sequence-length characteristics.
+\item Combining architectures improves stability rather than peak performance.
 \end{itemize}
 
 \subsection{Practical Implications}
 
 \begin{itemize}
-\item \textbf{Deployment choice.} For this task, \ac{sLSTM} (5\,s) offers the best accuracy–stability point, whereas the Linear Transformer (5\,s) provides the fastest, most predictable training with competitive accuracy.
-\item \textbf{Data imbalance dominates.} Architectural changes and longer context alone do not fix minority-class recall; future work should prioritize class-imbalance remedies (e.g., cost-sensitive learning, reweighting, resampling, augmentation).
+\item For deployment, \ac{sLSTM} at 5\,s provides the best balance of performance
+and efficiency.
+\item The Linear Transformer remains attractive for fast, predictable training.
+\item Class imbalance remains the dominant challenge; architectural complexity
+alone does not resolve minority-class underperformance.
 \end{itemize}
+
+Overall, \ac{xLSTM} variants offer measurable but modest benefits over the
+Linear Transformer baseline. Their advantages are constrained by
+window-dependence, computational overhead, and persistent dataset imbalance,
+suggesting that future work should prioritize imbalance mitigation alongside
+architectural refinement.
