@@ -29,11 +29,48 @@ statistical tests are based on the balanced-accuracy–selected checkpoints.
 \section{Overall Performance Comparison}
 \label{sec:overall_performance}
 
-We evaluate four complementary metrics: balanced accuracy (robust to class
-imbalance), Cohen’s~\(\kappa\) (agreement beyond chance), weighted F1
-(performance weighted by class prevalence), and macro-\ac{AUCPR}, which is
-particularly relevant for rare-event detection. Figure formats rather than
-tables are used to emphasize trends, robustness, and variability.
+We analyze four key metrics (see Section~\ref{sec:evaluation_metrics} for
+definitions): balanced accuracy (robust to class imbalance), Cohen's~\(\kappa\)
+(agreement beyond chance), weighted F1 (precision--recall harmonic mean weighted
+by support), and AUCPR Macro (ranking quality for rare events). Overall
+accuracy is not emphasized because it is misleading under imbalance; when shown,
+it serves only for completeness in statistical tests.
+
+\subsection{Complete Performance Results}
+
+Table~\ref{tab:metrics_comparison} summarizes performance across all 60 runs (4
+architectures~\(\times\) 3 windows~\(\times\) 5 seeds). Values are
+mean~\(\pm\)~standard deviation over the five seeds; bold indicates the best
+score within a given window length.
+
+\begin{table}[htbp]
+\centering
+\caption{Performance comparison across architectures and temporal window
+configurations. Values are mean~\(\pm\)~std over five seeds using
+balanced-accuracy checkpointing. Boldface indicates the best value per window.}
+\label{tab:metrics_comparison}
+\footnotesize
+\begin{tabular}{l | c | c | c | c | c}
+\textbf{Architecture} & \textbf{Win.} & \textbf{Bal. Acc.} & \textbf{Cohen \(\kappa\)} & \textbf{F1 (Weigh.)} & \textbf{AUCPR (Macro)} \\
+\hline
+Linear Transf. & 5s & $0.5206 \pm 0.041$ & $0.4570 \pm 0.049$ & $0.7115 \pm 0.034$ & $0.4675 \pm 0.013$ \\
+Linear Transf. & 7s & $0.5008 \pm 0.043$ & $0.4646 \pm 0.030$ & $0.7170 \pm 0.022$ & $0.4653 \pm 0.039$ \\
+Linear Transf. & 9s & $0.4845 \pm 0.037$ & $0.4248 \pm 0.048$ & $0.6914 \pm 0.031$ & $0.4526 \pm 0.026$ \\
+\hline
+\ac{mLSTM} & 5s & $0.5093 \pm 0.031$ & $0.4388 \pm 0.037$ & $0.7067 \pm 0.017$ & $0.4870 \pm 0.030$ \\
+\ac{mLSTM} & 7s & $\mathbf{0.5066 \pm 0.029}$ & $\mathbf{0.4744 \pm 0.012}$ & $\mathbf{0.7270 \pm 0.006}$ & $0.4835 \pm 0.016$ \\
+\ac{mLSTM} & 9s & $0.4640 \pm 0.066$ & $0.4218 \pm 0.063$ & $0.7019 \pm 0.029$ & $0.4591 \pm 0.036$ \\
+\hline
+\ac{sLSTM} & 5s & $\mathbf{0.5215 \pm 0.014}$ & $\mathbf{0.4707 \pm 0.044}$ & $\mathbf{0.7197 \pm 0.027}$ & $\mathbf{0.5127 \pm 0.016}$ \\
+\ac{sLSTM} & 7s & $0.4845 \pm 0.055$ & $0.4660 \pm 0.091$ & $\mathbf{0.7198 \pm 0.047}$ & $\mathbf{0.4928 \pm 0.042}$ \\
+\ac{sLSTM} & 9s & $\mathbf{0.5246 \pm 0.038}$ & $\mathbf{0.4789 \pm 0.063}$ & $\mathbf{0.7256 \pm 0.037}$ & $\mathbf{0.4855 \pm 0.039}$ \\
+\hline
+\ac{mLSTM}+\ac{sLSTM} & 5s & $0.5003 \pm 0.017$ & $0.4395 \pm 0.050$ & $0.7052 \pm 0.029$ & $0.4887 \pm 0.013$ \\
+\ac{mLSTM}+\ac{sLSTM} & 7s & $0.5046 \pm 0.028$ & $0.4428 \pm 0.026$ & $0.7070 \pm 0.016$ & $0.4789 \pm 0.020$ \\
+\ac{mLSTM}+\ac{sLSTM} & 9s & $0.5010 \pm 0.011$ & $0.4312 \pm 0.045$ & $0.7013 \pm 0.027$ & $0.4722 \pm 0.023$ \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsection{Overview of Aggregate Performance}
 
