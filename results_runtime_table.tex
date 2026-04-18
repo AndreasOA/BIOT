@@ -1,0 +1,27 @@
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Training runtime comparison across architectural variants and temporal windows. Values represent mean runtime across seeds with standard deviation.}
+\label{tab:runtime_comparison}
+\begin{tabular}{l | c | c | c | c}
+\hline
+\textbf{Architecture} & \textbf{Window (s)} & \textbf{N Runs} & \textbf{Mean Runtime} & \textbf{Std (min)} \\
+\hline
+Linear Transformer & 5 & 5 & 1h 49m & 2.7 \\
+Linear Transformer & 7 & 5 & 2h 38m & 1.0 \\
+Linear Transformer & 9 & 5 & 3h 15m & 0.6 \\
+\hline
+mLSTM & 5 & 5 & 5h 30m & 9.8 \\
+mLSTM & 7 & 4 & 7h 47m & 5.3 \\
+mLSTM & 9 & 4 & 10h 57m & 20.7 \\
+\hline
+mLSTM+sLSTM & 5 & 5 & 5h 32m & 11.9 \\
+mLSTM+sLSTM & 7 & 4 & 7h 37m & 9.4 \\
+mLSTM+sLSTM & 9 & 3 & 10h 27m & 9.6 \\
+\hline
+sLSTM & 5 & 5 & 4h 10m & 10.1 \\
+sLSTM & 7 & 3 & 5h 31m & 4.3 \\
+sLSTM & 9 & 4 & 6h 40m & 6.7 \\
+\hline
+\end{tabular}
+\end{table}

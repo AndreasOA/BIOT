@@ -1,0 +1,244 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global/global}
+    \entry{beck2024xlstm}{article}{}{}
+      \name{author}{9}{}{%
+        {{hash=5b05dfa04b4b93c454478fcca783ee91}{%
+           family={Beck},
+           familyi={B\bibinitperiod},
+           given={Maximilian},
+           giveni={M\bibinitperiod}}}%
+        {{hash=7703d33831c93661ff566a98e9c029d6}{%
+           family={Pöppel},
+           familyi={P\bibinitperiod},
+           given={Korbinian},
+           giveni={K\bibinitperiod}}}%
+        {{hash=8b36fed8f7a0a602139b6d67aaa887e1}{%
+           family={Spanring},
+           familyi={S\bibinitperiod},
+           given={Markus},
+           giveni={M\bibinitperiod}}}%
+        {{hash=f331b5a584ef0eb7ab62b16ddf9fc0a8}{%
+           family={Auer},
+           familyi={A\bibinitperiod},
+           given={Andreas},
+           giveni={A\bibinitperiod}}}%
+        {{hash=78da98b2489f2ae99b4d933370b9303f}{%
+           family={Prudnikova},
+           familyi={P\bibinitperiod},
+           given={Oleksandra},
+           giveni={O\bibinitperiod}}}%
+        {{hash=d93f88df1acd17907db2b3033322d2dc}{%
+           family={Kopp},
+           familyi={K\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=dd69f2d35665eb16375f92c741a26393}{%
+           family={Klambauer},
+           familyi={K\bibinitperiod},
+           given={Günter},
+           giveni={G\bibinitperiod}}}%
+        {{hash=4954f897f0e2228c69f8903b2e1e25d1}{%
+           family={Brandstetter},
+           familyi={B\bibinitperiod},
+           given={Johannes},
+           giveni={J\bibinitperiod}}}%
+        {{hash=41b31e29fb2bdbf9f5c9c1b0d5b3e815}{%
+           family={Hochreiter},
+           familyi={H\bibinitperiod},
+           given={Sepp},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{a6d048ec4dafc4942083c5a0f5dc041d}
+      \strng{fullhash}{730d85f5a316ff3e7e9525ec78fd769a}
+      \strng{fullhashraw}{730d85f5a316ff3e7e9525ec78fd769a}
+      \strng{bibnamehash}{730d85f5a316ff3e7e9525ec78fd769a}
+      \strng{authorbibnamehash}{730d85f5a316ff3e7e9525ec78fd769a}
+      \strng{authornamehash}{a6d048ec4dafc4942083c5a0f5dc041d}
+      \strng{authorfullhash}{730d85f5a316ff3e7e9525ec78fd769a}
+      \strng{authorfullhashraw}{730d85f5a316ff3e7e9525ec78fd769a}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2405.04517}
+      \field{title}{xLSTM: Extended Long Short-Term Memory}
+      \field{year}{2024}
+    \endentry
+    \entry{harati2015improved}{inproceedings}{}{}
+      \name{author}{5}{}{%
+        {{hash=94746857d81231ce5e4c70a6b8f975ca}{%
+           family={Harati},
+           familyi={H\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=2f33aae29a8a325efc7a9604b501509f}{%
+           family={Golmohammadi},
+           familyi={G\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=3f150d9518f4ae0ff10cbc1d898a451f}{%
+           family={Lopez},
+           familyi={L\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=0f39dc7f12523d1e4f3d0f1135552fbc}{%
+           family={Obeid},
+           familyi={O\bibinitperiod},
+           given={I.},
+           giveni={I\bibinitperiod}}}%
+        {{hash=ca9db2b364a406ce72ddce4f1506e7ef}{%
+           family={Picone},
+           familyi={P\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Philadelphia, Pennsylvania, USA}%
+      }
+      \strng{namehash}{32e576d17e5377eeb1994947eadd1bc6}
+      \strng{fullhash}{483a640a6f91af8dee94c46e503b637e}
+      \strng{fullhashraw}{483a640a6f91af8dee94c46e503b637e}
+      \strng{bibnamehash}{483a640a6f91af8dee94c46e503b637e}
+      \strng{authorbibnamehash}{483a640a6f91af8dee94c46e503b637e}
+      \strng{authornamehash}{32e576d17e5377eeb1994947eadd1bc6}
+      \strng{authorfullhash}{483a640a6f91af8dee94c46e503b637e}
+      \strng{authorfullhashraw}{483a640a6f91af8dee94c46e503b637e}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the IEEE Signal Processing in Medicine and Biology Symposium}
+      \field{title}{Improved EEG Event Classification Using Differential Energy}
+      \field{year}{2015}
+      \field{pages}{1\bibrangedash 4}
+      \range{pages}{4}
+      \verb{urlraw}
+      \verb https://www.isip.piconepress.com/publications/conference_proceedings/2015/ieee_spmb/denergy/
+      \endverb
+      \verb{url}
+      \verb https://www.isip.piconepress.com/publications/conference_proceedings/2015/ieee_spmb/denergy/
+      \endverb
+    \endentry
+    \entry{vaswani2017attention}{inproceedings}{}{}
+      \name{author}{8}{}{%
+        {{hash=7f28e84700536646dd6620a0db07ad09}{%
+           family={Vaswani},
+           familyi={V\bibinitperiod},
+           given={Ashish},
+           giveni={A\bibinitperiod}}}%
+        {{hash=62efade83d70f0323fe248755e6c90c5}{%
+           family={Shazeer},
+           familyi={S\bibinitperiod},
+           given={Noam},
+           giveni={N\bibinitperiod}}}%
+        {{hash=06649ebab1ea5cac0250746a19764975}{%
+           family={Parmar},
+           familyi={P\bibinitperiod},
+           given={Niki},
+           giveni={N\bibinitperiod}}}%
+        {{hash=831027ee0ebf22375e2a86afc1881909}{%
+           family={Uszkoreit},
+           familyi={U\bibinitperiod},
+           given={Jakob},
+           giveni={J\bibinitperiod}}}%
+        {{hash=2fd2982e30ebcec93ec1cf76e0d797fd}{%
+           family={Jones},
+           familyi={J\bibinitperiod},
+           given={Llion},
+           giveni={L\bibinitperiod}}}%
+        {{hash=27b07e4eacbf4ef7a1438e3badb7dd8d}{%
+           family={Gomez},
+           familyi={G\bibinitperiod},
+           given={Aidan\bibnamedelima N},
+           giveni={A\bibinitperiod\bibinitdelim N\bibinitperiod}}}%
+        {{hash=f2bc899b1160163417da7bf510f15d33}{%
+           family={Kaiser},
+           familyi={K\bibinitperiod},
+           given={Lukasz},
+           giveni={L\bibinitperiod}}}%
+        {{hash=95595a0fefb86187cbc36e551017d332}{%
+           family={Polosukhin},
+           familyi={P\bibinitperiod},
+           given={Illia},
+           giveni={I\bibinitperiod}}}%
+      }
+      \strng{namehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{fullhash}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{fullhashraw}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{bibnamehash}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{authorbibnamehash}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{authornamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{authorfullhash}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{authorfullhashraw}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \field{sortinit}{V}
+      \field{sortinithash}{afb52128e5b4dc4b843768c0113d673b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Advances in Neural Information Processing Systems}
+      \field{title}{Attention is All you Need}
+      \field{volume}{30}
+      \field{year}{2017}
+    \endentry
+    \entry{yang2023biot}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{hash=22cb5bc1850bdf450fe64b318e7091e4}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Chaoqi},
+           giveni={C\bibinitperiod}}}%
+        {{hash=2dd03693ae9441014f7000a265e113a6}{%
+           family={Westover},
+           familyi={W\bibinitperiod},
+           given={M\bibnamedelima Brandon},
+           giveni={M\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=a1b0869dc74267b9c5cd955132f0ef7d}{%
+           family={Sun},
+           familyi={S\bibinitperiod},
+           given={Jimeng},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{c2e289a50c543167fb26565b50bce956}
+      \strng{fullhash}{6768a30410a33816f6405fcbf28fd95f}
+      \strng{fullhashraw}{6768a30410a33816f6405fcbf28fd95f}
+      \strng{bibnamehash}{6768a30410a33816f6405fcbf28fd95f}
+      \strng{authorbibnamehash}{6768a30410a33816f6405fcbf28fd95f}
+      \strng{authornamehash}{c2e289a50c543167fb26565b50bce956}
+      \strng{authorfullhash}{6768a30410a33816f6405fcbf28fd95f}
+      \strng{authorfullhashraw}{6768a30410a33816f6405fcbf28fd95f}
+      \field{sortinit}{Y}
+      \field{sortinithash}{fd67ad5a9ef0f7456bdd9aab10fe1495}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Thirty-seventh Conference on Neural Information Processing Systems}
+      \field{title}{BIOT: Biosignal Transformer for Cross-data Learning in the Wild}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://openreview.net/forum?id=c2LZyTyddi
+      \endverb
+      \verb{url}
+      \verb https://openreview.net/forum?id=c2LZyTyddi
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

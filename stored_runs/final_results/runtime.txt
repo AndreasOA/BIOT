@@ -1,0 +1,67 @@
+SLSTM:
+6h 31m 48s - 9s - seed 10
+6h 41m 7s - 9s - seed 999
+6h 41m 38s- 9s - seed 456
+6h 39m 40s - 9s - seed 123
+6h 48m 9s - 9s - seed 42
+5h 29m 21s - 7s - seed 10
+5h 36m 2s - 7s - seed 999
+5h 38m 33s - 7s  - seed 456
+5h 28m 3s - 7s - seed 123 
+5h 32m 24s - 7s  - seed 42
+4h 21m 6s - 5s - seed 10
+4h 19m 24s - 5s - seed 999
+4h 12m 27s - 5s - seed 456
+3h 57m 54s - 5s - seed 123
+4h 3m 1s - 5s - seed 42
+
+BIOT:
+3h 15m 44s - 9s - seed 10
+3h 16m 12s - 9s - seed 999
+3h 14m 41s - 9s - seed 456
+3h 15m 57s - 9s - seed 123
+3h 15m 53s - 9s - seed 42
+2h 39m 6s - 7s - seed 10 
+2h 37m 43s - 7s - seed 999
+2h 37m 56s - 7s - seed 456
+2h 39m 11s - 7s - seed 123
+2h 36m 46s - 7s - seed 42
+1h 47m 21s - 5s - seed 10
+1h 48m 32s - 5s - seed 999
+1h 46m 53s - 5s - seed 456
+1h 49m 31s - 5s - seed 123
+1h 53m 45s - 5s - seed 42
+
+MLSTM:
+10h 27m 30s - 9s - seed 10
+10h 59m 3s - 9s - seed 999
+11h 12m 20s- 9s - seed 456
+11h 10m 51s - 9s - seed 123
+11h 11m 49s - 9s - seed 42
+7h 41m 45s - 7s - seed 10
+7h 53m 36s - 7s - seed 999
+5h 38m 33s - 7s  - seed 456
+7h 44m 50s - 7s - seed 123 
+7h 50m 23s - 7s - seed 42
+5h 24m 33s - 5s - seed 10 
+5h 31m 59s - 5s - seed 999
+5h 46m 52s - 5s - seed 456
+5h 26m 2s - 5s - seed 123
+5h 22m 38s - 5s - seed 42
+
+S+MLSTM:
+10h 26m 35s - 9s - seed 10
+10h 38m 15s - 9s - seed 999
+10h 37m 35s- 9s - seed 456
+10h 23m - 9s - seed 123
+10h 19m 9s - 9s - seed 42
+7h 33m 20s - 7s - seed 10
+7h 51m 1s - 7s - seed 999
+8h 0m 0s - 7s  - seed 456
+7h 32m 39s - 7s - seed 123 
+7h 31m 13s - 7s - seed 42
+5h 33m 49s - 5s - seed 10 
+5h 36m 35s - 5s - seed 999
+5h 18m 37s - 5s - seed 456
+5h 23m 17s - 5s - seed 123
+5h 48m 52s - 5s - seed 42

@@ -9,14 +9,14 @@ https://github.com/Abhishaike/EEG_Event_Classification
 """
 
 
-def BuildEvents(signals, times, EventData):
+def BuildEvents(signals, times, EventData, secondsBefore, secondsAfter):
     [numEvents, z] = EventData.shape  # numEvents is equal to # of rows of the .rec file
     fs = 250.0
     [numChan, numPoints] = signals.shape
     # for i in range(numChan):  # standardize each channel
     #     if np.std(signals[i, :]) > 0:
     #         signals[i, :] = (signals[i, :] - np.mean(signals[i, :])) / np.std(signals[i, :])
-    features = np.zeros([numEvents, numChan, int(fs) * 5])
+    features = np.zeros([numEvents, numChan, int(fs) * (secondsBefore + secondsAfter + 1)])
     offending_channel = np.zeros([numEvents, 1])  # channel that had the detected thing
     labels = np.zeros([numEvents, 1])
     offset = signals.shape[1]
@@ -27,7 +27,7 @@ def BuildEvents(signals, times, EventData):
         end = np.where((times) >= EventData[i, 2])[0][0]
         # print (offset + start - 2 * int(fs), offset + end + 2 * int(fs), signals.shape)
         features[i, :] = signals[
-            :, offset + start - 2 * int(fs) : offset + end + 2 * int(fs)
+            :, offset + start - secondsBefore * int(fs) : offset + end + secondsAfter * int(fs)
         ]
         offending_channel[i, :] = int(chan)
         labels[i, :] = int(EventData[i, 3])
@@ -116,7 +116,7 @@ def readEDF(fileName):
     return [signals, times, eventData, Rawdata]
 
 
-def load_up_objects(BaseDir, Features, OffendingChannels, Labels, OutDir):
+def load_up_objects(BaseDir, Features, OffendingChannels, Labels, OutDir, secondsBefore, secondsAfter):
     for dirName, subdirList, fileList in tqdm(os.walk(BaseDir)):
         print("Found directory: %s" % dirName)
         for fname in fileList:
@@ -130,7 +130,7 @@ def load_up_objects(BaseDir, Features, OffendingChannels, Labels, OutDir):
                 except (ValueError, KeyError):
                     print("something funky happened in " + dirName + "/" + fname)
                     continue
-                signals, offending_channels, labels = BuildEvents(signals, times, event)
+                signals, offending_channels, labels = BuildEvents(signals, times, event, secondsBefore, secondsAfter)
 
                 for idx, (signal, offending_channel, label) in enumerate(
                     zip(signals, offending_channels, labels)
@@ -160,32 +160,32 @@ def save_pickle(object, filename):
 TUEV dataset is downloaded from https://isip.piconepress.com/projects/tuh_eeg/html/downloads.shtml
 """
 
-root = "datasets/TUEV/edf"
-train_out_dir = os.path.join(root, "processed_train")
-eval_out_dir = os.path.join(root, "processed_eval")
-if not os.path.exists(train_out_dir):
-    os.makedirs(train_out_dir)
-if not os.path.exists(eval_out_dir):
-    os.makedirs(eval_out_dir)
+# root = "datasets/TUEV/edf"
+# train_out_dir = os.path.join(root, "processed_train")
+# eval_out_dir = os.path.join(root, "processed_eval")
+# if not os.path.exists(train_out_dir):
+#     os.makedirs(train_out_dir)
+# if not os.path.exists(eval_out_dir):
+#     os.makedirs(eval_out_dir)
 
-BaseDirTrain = os.path.join(root, "train")
-fs = 250
-TrainFeatures = np.empty(
-    (0, 16, fs)
-)  # 0 for lack of intialization, 22 for channels, fs for num of points
-TrainLabels = np.empty([0, 1])
-TrainOffendingChannel = np.empty([0, 1])
-load_up_objects(
-    BaseDirTrain, TrainFeatures, TrainLabels, TrainOffendingChannel, train_out_dir
-)
+# BaseDirTrain = os.path.join(root, "train")
+# fs = 250
+# TrainFeatures = np.empty(
+#     (0, 16, fs)
+# )  # 0 for lack of intialization, 22 for channels, fs for num of points
+# TrainLabels = np.empty([0, 1])
+# TrainOffendingChannel = np.empty([0, 1])
+# load_up_objects(
+#     BaseDirTrain, TrainFeatures, TrainLabels, TrainOffendingChannel, train_out_dir
+# )
 
-BaseDirEval = os.path.join(root, "eval")
-fs = 250
-EvalFeatures = np.empty(
-    (0, 16, fs)
-)  # 0 for lack of intialization, 22 for channels, fs for num of points
-EvalLabels = np.empty([0, 1])
-EvalOffendingChannel = np.empty([0, 1])
-load_up_objects(
-    BaseDirEval, EvalFeatures, EvalLabels, EvalOffendingChannel, eval_out_dir
-)
+# BaseDirEval = os.path.join(root, "eval")
+# fs = 250
+# EvalFeatures = np.empty(
+#     (0, 16, fs)
+# )  # 0 for lack of intialization, 22 for channels, fs for num of points
+# EvalLabels = np.empty([0, 1])
+# EvalOffendingChannel = np.empty([0, 1])
+# load_up_objects(
+#     BaseDirEval, EvalFeatures, EvalLabels, EvalOffendingChannel, eval_out_dir
+# )

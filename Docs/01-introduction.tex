@@ -1,0 +1,93 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+\cleardoubleoddpage%  Make sure to start each chapter on a new odd page
+\chapter{Introduction}
+\label{sec:introduction}
+
+
+\section{Motivation}
+\label{sec:introduction:motivation}
+
+Epileptic seizure classification from electroencephalography (\ac{EEG}) remains a challenging task in clinical decision support, despite decades of algorithmic development. \ac{EEG} signals are typically affected by noise, artifacts, varying montage configurations, and inconsistencies in recording protocols. Beyond that, meaningful clinical information often depends on both local temporal patterns and broader temporal, spatial dependencies across multiple channels. These properties make automated \ac{EEG} interpretation fundamentally different from many domains in which deep learning architectures were originally developed.
+
+Recent years have seen growing interest in applying modern sequence architectures to biosignals. Transformer-based approaches, such as the \acf{BIOT}~\cite{yang2023biot}, have shown promising performance due to their capacity to model long-range dependencies and their flexibility in handling complex multichannel data. At the same time, there has been a renewed focus on recurrent architectures, most notably through the introduction of \acf{xLSTM} models~\cite{beck2024xlstm}, which refine memory dynamics and introduce alternative mechanisms for temporal information integration. These developments raise an important open question: do architectural refinements designed primarily for large-scale language modeling translate into meaningful advantages for clinical \ac{EEG} seizure classification?
+
+Addressing this question requires moving beyond high-level architectural claims and examining performance in a controlled and clinically relevant setting. \ac{EEG} seizure detection involves imbalanced class distributions, heterogeneous recording conditions, and varying temporal context requirements. In such an environment, it is not sufficient to demonstrate numerical improvements alone; observed differences must be statistically robust, computationally justifiable, and practically meaningful for real-world clinical use.
+
+This thesis systematically evaluates whether \ac{xLSTM}-based architectures offer advantages over transformer-based biosignal sequence models for \ac{EEG} seizure classification. Four architectures are considered: a Linear Transformer baseline, \acf{sLSTM} and \acf{mLSTM} variants, and a combined model. All models are evaluated on the Temple University \ac{EEG} Event Corpus (\ac{TUEV}) using multiple temporal window configurations to analyze sensitivity to temporal context. To ensure methodological comparability, the evaluation framework remains consistent with the established \ac{BIOT} pipeline~\cite{yang2023biot}, modifying only the sequence modeling component while retaining tokenization and projection stages.
+
+
+\section{Objectives and Approach}
+\label{sec:introduction:objectives}
+
+The primary objective of this thesis is to evaluate the effectiveness of integrating \ac{xLSTM} architectures within the \ac{BIOT} framework for \ac{EEG} seizure classification. Specifically, this work aims to determine whether \ac{xLSTM} variants can enhance temporal dependency modeling compared to the original Linear Transformer-based \ac{BIOT} architecture.
+
+\subsection{Research Questions}
+
+This thesis addresses the following key research questions:
+
+\begin{enumerate}
+    \item Can \ac{xLSTM} architectures effectively replace Linear Transformers in the \ac{BIOT} framework while maintaining or improving EEG classification performance?
+    \item Which \ac{xLSTM} variant (\ac{mLSTM}, \ac{sLSTM}, or combined configurations) demonstrates superior performance for \ac{EEG} classification tasks?
+    \item How do different experimental configurations, particularly varying sample lengths, affect the relative performance of \ac{xLSTM} variants compared to the baseline Linear Transformer?
+\end{enumerate}
+
+\subsection{Evaluation Methodology}
+
+To address these research questions, this thesis employs a comprehensive experimental approach using the \ac{TUEV} dataset. The evaluation compares four distinct model configurations:
+
+\begin{itemize}
+    \item \textbf{Baseline}: Original Linear Transformer-based \ac{BIOT} architecture
+    \item \textbf{\ac{mLSTM}}: \ac{BIOT} with Matrix \ac{LSTM} component
+    \item \textbf{\ac{sLSTM}}: \ac{BIOT} with Scalar \ac{LSTM} component  
+    \item \textbf{M+S-\ac{LSTM}}: \ac{BIOT} with combined \ac{mLSTM} and \ac{sLSTM} components
+\end{itemize}
+
+The experimental design maintains consistency with the original \ac{BIOT} evaluation protocol while incorporating architectural modifications to replace the Linear Transformer component with \ac{xLSTM} blocks. Multiple sample lengths are tested to assess model performance across different temporal contexts, using standard evaluation metrics including Balanced Accuracy, Cohen's Kappa, and Weighted F1 Score.
+
+\subsection{Statistical Analysis and Visualization}
+
+Beyond basic performance comparison, this thesis employs rigorous statistical analysis to ensure robust conclusions:
+
+\begin{itemize}
+    \item \textbf{Statistical Significance Testing}: T-tests and Wilcoxon signed-rank tests are conducted to compare the best-performing model against other configurations, determining which models perform within statistically significant ranges of the optimal solution.
+    
+    \item \textbf{Performance Trend Analysis}: Plots illustrate how evaluation metrics change across different sample lengths. This visualization approach enables identification of optimal temporal contexts and understanding of model stability across different input durations.
+
+    \item \textbf{Confusion Matrix Analysis}: The best-performing model configurations are evaluated again on the test set to generate detailed confusion matrices. This analysis reveals which classes benefit most from the architectural improvements and identifies specific classification challenges that different \ac{xLSTM} variants address.
+\end{itemize}
+
+These analytical approaches provide both quantitative validation of performance improvements and qualitative insights into the behavioral differences between \ac{xLSTM} variants and the baseline Linear Transformer architecture.
+
+\subsection{Dataset and Scope}
+
+This evaluation uses the \acf{TUEV} dataset~\cite{harati2015improved}, a subset of the Temple University Hospital \ac{EEG} Corpus specifically designed for \ac{EEG} event classification. The dataset contains clinical recordings with annotations for six event types, including epileptiform discharges (\ac{SPSW}, \ac{GPED}, \ac{PLED}), artifacts, eye movements, and background activity. The multi-class classification task reflects real clinical scenarios with imbalanced class distributions, where pathological events are less frequent than normal activity.
+
+A detailed description of the \ac{TUEV} dataset, including event class definitions, electrode configurations, and data organization, is provided in Section~\ref{sec:dataset}.
+
+
+\section{Outline}
+\label{sec:introduction:outline}
+
+This thesis is structured as follows:
+
+\textbf{Chapter 2: Background and Related Work} provides the theoretical foundation for this research. It covers the basics of biosignal processing, reviews traditional and modern deep learning approaches for \ac{EEG} analysis, and introduces the \ac{BIOT} architecture. The chapter also presents the \ac{xLSTM} family of architectures, explaining their main innovations and advantages over traditional \acp{LSTM}.
+
+\textbf{Chapter 3: Methodology} describes the experimental design and implementation. This chapter explains how \ac{xLSTM} components are integrated into the \ac{BIOT} framework, describes the modifications made to the original architecture, and outlines the experimental protocol. It also provides details about the \ac{TUEV} dataset, preprocessing steps, and evaluation metrics used in this study.
+
+\textbf{Chapter 4: Experimental Setup} presents the specific configuration parameters, hyperparameter settings, and implementation details. This chapter explains how the evaluation differs from the original \ac{BIOT} protocol and justifies the experimental choices made to ensure fair comparison between architectures.
+
+\textbf{Chapter 5: Results and Analysis} presents the experimental findings and analyzes the performance differences between \ac{xLSTM} variants and the baseline Linear Transformer. The chapter includes statistical analysis, performance comparisons across different sample lengths, and detailed examination of model behavior.
+
+\textbf{Chapter 6: Discussion} provides critical interpretation of the experimental findings, examining window-dependent performance patterns and architecture-specific behaviors. The chapter analyzes statistical significance limitations, addresses severe class imbalance issues that question clinical viability, and discusses the challenges of transferring architectural innovations from natural language processing to biosignal analysis. A comprehensive assessment of methodological, architectural, and dataset limitations contextualizes the modest improvements observed.
+
+\textbf{Chapter 7: Conclusion and Outlook} summarizes the key findings regarding window-dependent performance and the lack of consistent architectural superiority. The chapter presents the main contributions of this work, including comprehensive temporal characterization and transparent reporting of limitations. It discusses priorities for future research---particularly architecture-specific hyperparameter optimization, increased sample sizes, and class imbalance mitigation---and explores long-term directions for domain-specific memory mechanisms and clinical deployment considerations.
+
+\textbf{Appendix A} provides a comprehensive research questions framework, systematically addressing what the central question is, why it matters, what evidence was needed, what methods were used, and what the results tell us about biosignal processing and domain transfer. This section includes detailed discussion of the broader implications for clinical machine learning and future research directions.
+
+\textbf{Appendix B} contains supplementary material including additional metric visualizations (balanced accuracy, Cohen's kappa, and weighted F1 boxplots across all window configurations) and complete per-run performance tables for all five random seeds across all architectural variants and temporal windows, supporting the statistical analyses presented in the main text.
+
+
+
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

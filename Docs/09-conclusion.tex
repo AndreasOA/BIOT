@@ -1,0 +1,46 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleardoubleoddpage
+\chapter{Conclusion and Outlook}
+\label{sec:conclusion}
+
+This thesis investigated the integration of \ac{xLSTM} architectures~\cite{beck2024xlstm} into the \ac{BIOT} framework~\cite{yang2023biot} for automated \ac{EEG} event classification using the \ac{TUEV} dataset~\cite{harati2015improved,obeid2016temple,ferrell2022electrode}. The study evaluated scalar-memory, matrix-memory, and combined variants across three temporal windows, providing a systematic assessment of architectural behaviour under controlled experimental settings.
+
+\section{Summary of Findings}
+
+The results show that architectural sophistication does not automatically translate into superior biosignal performance. Instead, benefits are strongly dependent on temporal configuration. The \ac{sLSTM} performs best at short and long windows, whereas \ac{mLSTM} performs best at intermediate windows. The Linear Transformer baseline remains competitive at shorter windows but degrades with increasing context length, consistent with known challenges in long-sequence processing~\cite{katharopoulos2020transformers}. These effects must be interpreted in the context of \ac{BIOT} tokenization, which produces relatively short discrete token sequences~\cite{yang2023biot}, reducing reliance on extended long-range memory.
+
+Statistical analysis confirms that most advantages are not significant at the current scale of evaluation, and inter-run variability remains substantial. This indicates that dataset characteristics, noise, and optimization dynamics influence performance at least as strongly as architectural design, echoing broader findings in \ac{EEG} machine learning research~\cite{banville2022robust}.
+
+\section{Clinical and Practical Implications}
+
+From a clinical perspective, class imbalance remains the key limiting factor. Minority classes retain insufficient recall despite architectural changes, highlighting the need for dedicated imbalance mitigation techniques~\cite{cui2019class,lin2017focal}. Without such strategies, none of the tested architectures can be considered clinically reliable.
+
+Regarding computational efficiency, the observed $2.3$--$3.4\times$ longer training time for \ac{xLSTM} variants contrasts with the original paper's emphasis on parallelizability and favorable scaling~\cite{beck2024xlstm}. This discrepancy likely stems from implementation limitations in the \texttt{xlstm} Python package (\url{https://github.com/NX-AI/xlstm/issues/58}) rather than inherent architectural inefficiency, suggesting that runtime should not be considered a definitive architectural limitation.
+
+\section{Key Contributions}
+
+This work contributes:
+\begin{itemize}
+\item A systematic, window-dependent characterization of \ac{xLSTM} behaviour within \ac{BIOT}.
+\item Evidence that performance variation is strongly influenced by temporal configuration and stochastic training effects rather than architecture alone.
+\item Transparent reporting of both strengths and limitations, supporting realistic expectations regarding advanced sequence models in biosignal processing.
+\end{itemize}
+
+\section{Limitations}
+
+The main limitations are limited statistical power due to five seeds per configuration, evaluation on a single imbalanced dataset~\cite{harati2015improved,obeid2016temple}, shared hyperparameters across architectures, and restricted exploration of temporal windows.
+
+\section{Future Directions}
+
+Future work should prioritise:
+\begin{itemize}
+\item Architecture-specific hyperparameter optimization.
+\item Class imbalance mitigation (e.g., focal loss, class-balanced loss, SMOTE, ADASYN~\cite{cui2019class,lin2017focal,chawla2002smote,he2008adasyn}).
+\item Cross-dataset validation.
+\item More detailed exploration of temporal context and potentially adaptive or multi-scale temporal modeling.
+\end{itemize}
+
+\section{Final Reflection}
+
+Overall, this thesis demonstrates that while \ac{xLSTM} architectures offer promising modeling capabilities, their benefits in biosignal processing are nuanced and context-dependent rather than universally superior. Reliable \ac{EEG} classification requires a combined focus on representation design, statistical robustness, and clinical realism. Rather than discouraging further exploration, these findings establish a grounded foundation for future research aimed at bridging methodological innovation and clinically meaningful impact.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

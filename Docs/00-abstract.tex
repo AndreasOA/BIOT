@@ -1,0 +1,39 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+%% Abstract of your thesis in default document language
+%% 
+
+\cleardoubleoddpage%  Make sure to start abstract on a new odd page
+\begin{abstract*}
+Reliable seizure classification from electroencephalography (EEG) remains a challenging problem due to noisy clinical data, various recording conditions, and the need to capture complex temporal–spatial dependencies. This thesis investigates whether the recently proposed Extended Long Short-Term Memory (xLSTM) architecture offers advantages over established biosignal sequence models, particularly the Biosignal Transformer (BIOT), for EEG seizure classification. Using a clinically relevant dataset and a controlled evaluation framework, both architectures are benchmarked across multiple temporal window configurations and training regimes.
+
+We evaluate four architectures (Linear Transformer baseline, \ac{mLSTM}, \ac{sLSTM}, and their combination) on the \ac{TUEV} dataset using multiple temporal window configurations. The experimental protocol maintains consistency with the original \ac{BIOT} evaluation framework, replacing only sequence processing components while preserving the tokenization and projection layers.
+
+Results demonstrate window-dependent performance patterns with only modest improvements. \ac{sLSTM} performs best at longer windows, \ac{mLSTM} at intermediate lengths, while the combined architecture offers stability without achieving peak performance. However, statistical testing reveals that most improvements do not reach statistical significance, with only isolated metrics reaching statistical thresholds. The architectural variants introduce substantial computational overhead without consistent gains across evaluation metrics.
+
+This work presents a systematic comparison of \ac{xLSTM} architectures for clinical \ac{EEG} seizure classification. Our findings demonstrate that \ac{xLSTM} architectures provide limited practical advantages over Linear Transformers in imbalanced biosignal tasks, where dataset characteristics impose fundamental constraints on achievable performance. The results emphasize the importance of rigorous statistical validation beyond numerical comparisons and highlight practical trade-offs between architectural complexity and clinical utility.
+\end{abstract*}
+
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+%% Abstract of your thesis in an additional language
+%% 
+
+\cleardoubleoddpage%  Make sure to start abstract on a new odd page
+\begin{otherlanguage}{ngerman}
+\begin{abstract*}
+Zuverlässige Anfallsklassifikation aus Elektroenzephalographie (EEG) bleibt aufgrund verrauschter klinischer Daten, unterschiedlicher Aufnahmebedingungen und der Notwendigkeit, komplexe temporale Abhängigkeiten zu erfassen, eine herausfordernde Aufgabe. Diese Arbeit untersucht, ob die kürzlich vorgestellte Extended Long Short-Term Memory (xLSTM)-Architektur Vorteile gegenüber etablierten Sequenzmodellen für Biosignale bietet, insbesondere dem Biosignal Transformer (BIOT). Unter Verwendung eines klinisch relevanten Datensatzes und eines kontrollierten Evaluierungsrahmens werden beide Architekturen über mehrere Konfigurationen hinweg verglichen.
+
+Es werden vier Architekturen (Linear Transformer Baseline, \ac{mLSTM}, \ac{sLSTM} und deren Kombination) auf dem \ac{TUEV}-Datensatz unter Verwendung mehrerer temporaler Fensterkonfigurationen evaluiert. Das experimentelle Protokoll behält die Konsistenz mit dem ursprünglichen \ac{BIOT}-Evaluierungsrahmen bei und ersetzt nur die Sequenzverarbeitungskomponenten, während die Tokenisierungs- und Projektionsschichten erhalten bleiben.
+
+Die Ergebnisse zeigen fensterabhängige Leistungsmuster mit nur moderaten Verbesserungen. \ac{sLSTM} performt am besten bei längeren Fenstern, \ac{mLSTM} bei mittleren Längen, während die kombinierte Architektur Stabilität ohne Spitzenleistung bietet. Statistische Tests zeigen jedoch, dass die meisten Verbesserungen keine statistische Signifikanz aufweisen, wobei nur vereinzelte Metriken statistische Schwellenwerte erreichen. Die \ac{xLSTM} Varianten führen zu erheblichem rechnerischem Overhead ohne konsistente Gewinne über alle Evaluierungsmetriken hinweg.
+
+Diese Arbeit präsentiert einen systematischen Vergleich von \ac{xLSTM}-Architekturen für klinische \ac{EEG}-Anfallsklassifikation. Die Ergebnisse zeigen begrenzte praktische Vorteile gegenüber Linear Transformern bei unausgeglichenen Biosignalaufgaben bieten, wo Datensatzeigenschaften fundamentale Einschränkungen der erreichbaren Leistung auferlegen. Die Resultate betonen die Wichtigkeit rigoroser statistischer Validierung über numerische Vergleiche hinaus und heben praktische Trade-offs zwischen architektonischer Komplexität und klinischem Nutzen hervor.
+\end{abstract*}
+\end{otherlanguage}
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

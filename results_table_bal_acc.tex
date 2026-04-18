@@ -1,0 +1,27 @@
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Performance comparison across architectural variants and temporal windows using balanced accuracy checkpoints. Values represent mean ± standard deviation across multiple independent runs. Missing configurations (N<5) will be completed in future experiments.}
+\label{tab:metrics_bal_acc_complete}
+\begin{tabular}{l | c | c | c | c | c | c}
+\hline
+\textbf{Architecture} & \textbf{Window} & \textbf{N} & \textbf{Balanced Acc.} & \textbf{Cohen $\kappa$} & \textbf{F1 Weighted} & \textbf{AUCPR Macro} \\
+\hline
+Linear Transformer & 2-2 & 5 & 0.5206 ± 0.0406 & 0.4570 ± 0.0494 & 0.7115 ± 0.0340 & 0.4675 ± 0.0133 \\
+Linear Transformer & 3-3 & 5 & 0.5008 ± 0.0429 & 0.4646 ± 0.0304 & 0.7170 ± 0.0220 & 0.4653 ± 0.0388 \\
+Linear Transformer & 4-4 & 5 & 0.4845 ± 0.0373 & 0.4248 ± 0.0481 & 0.6914 ± 0.0308 & 0.4526 ± 0.0255 \\
+\hline
+mLSTM & 2-2 & 5 & 0.5093 ± 0.0314 & 0.4388 ± 0.0368 & 0.7067 ± 0.0166 & 0.4870 ± 0.0295 \\
+mLSTM & 3-3 & 5 & 0.5066 ± 0.0287 & 0.4744 ± 0.0116 & 0.7270 ± 0.0060 & 0.4835 ± 0.0155 \\
+mLSTM & 4-4 & 5 & 0.4640 ± 0.0659 & 0.4218 ± 0.0634 & 0.7019 ± 0.0285 & 0.4591 ± 0.0363 \\
+\hline
+mLSTM+sLSTM & 2-2 & 5 & 0.5003 ± 0.0172 & 0.4395 ± 0.0498 & 0.7052 ± 0.0292 & 0.4887 ± 0.0133 \\
+mLSTM+sLSTM & 3-3 & 5 & 0.5046 ± 0.0282 & 0.4428 ± 0.0258 & 0.7070 ± 0.0164 & 0.4789 ± 0.0201 \\
+mLSTM+sLSTM & 4-4 & 5 & 0.5010 ± 0.0114 & 0.4312 ± 0.0447 & 0.7013 ± 0.0270 & 0.4722 ± 0.0225 \\
+\hline
+sLSTM & 2-2 & 5 & 0.5215 ± 0.0137 & 0.4707 ± 0.0442 & 0.7197 ± 0.0267 & 0.5127 ± 0.0158 \\
+sLSTM & 3-3 & 5 & 0.4845 ± 0.0550 & 0.4660 ± 0.0909 & 0.7198 ± 0.0467 & 0.4928 ± 0.0419 \\
+sLSTM & 4-4 & 5 & 0.5246 ± 0.0381 & 0.4789 ± 0.0630 & 0.7256 ± 0.0365 & 0.4855 ± 0.0389 \\
+\hline
+\end{tabular}
+\end{table}

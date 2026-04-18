@@ -1,0 +1,115 @@
+STATISTICAL TEST RESULTS
+Metrics Type: bal_acc
+Group A (Model A) vs Group B (Model B)
+================================================================================
+
+Metric                    t-test t     t-test p     Wilcoxon W   Wilcoxon p  
+--------------------------------------------------------------------------------
+accuracy                  -0.638       0.558        6            0.812       
+aucpr_macro               -1.364       0.244        3            0.312       
+aucpr_micro               -1.112       0.328        6            0.812       
+auroc_macro_ovo           -0.822       0.457        4            0.438       
+auroc_macro_ovr           -1.892       0.131        1            0.125       
+auroc_weighted_ovo        -1.819       0.143        2            0.188       
+auroc_weighted_ovr        0.216        0.839        7            1.000       
+balanced_accuracy         0.877        0.430        4            0.438       
+cohen_kappa               -0.037       0.972        7            1.000       
+f1_weighted               -0.129       0.903        7            1.000       
+
+================================================================================
+
+DETAILED COMPARISON:
+--------------------------------------------------------------------------------
+
+accuracy:
+  Model A mean: 0.6886
+  Model B mean: 0.7074
+  Difference: -0.0188
+  Model A values: ['0.6888', '0.6841', '0.7126', '0.7137', '0.6437']
+  Model B values: ['0.6569', '0.8032', '0.6906', '0.6894', '0.6967']
+  t-test significance: p=0.558 
+  Wilcoxon significance: p=0.812 
+
+aucpr_macro:
+  Model A mean: 0.4653
+  Model B mean: 0.4928
+  Difference: -0.0275
+  Model A values: ['0.4036', '0.4618', '0.5080', '0.4848', '0.4685']
+  Model B values: ['0.4604', '0.5229', '0.5305', '0.4362', '0.5142']
+  t-test significance: p=0.244 
+  Wilcoxon significance: p=0.312 
+
+aucpr_micro:
+  Model A mean: 0.7380
+  Model B mean: 0.7779
+  Difference: -0.0399
+  Model A values: ['0.7396', '0.7089', '0.7886', '0.7675', '0.6853']
+  Model B values: ['0.7275', '0.8665', '0.7672', '0.7533', '0.7748']
+  t-test significance: p=0.328 
+  Wilcoxon significance: p=0.812 
+
+auroc_macro_ovo:
+  Model A mean: 0.8208
+  Model B mean: 0.8305
+  Difference: -0.0097
+  Model A values: ['0.7798', '0.8380', '0.8296', '0.8425', '0.8142']
+  Model B values: ['0.7924', '0.8259', '0.8563', '0.8215', '0.8563']
+  t-test significance: p=0.457 
+  Wilcoxon significance: p=0.438 
+
+auroc_macro_ovr:
+  Model A mean: 0.8585
+  Model B mean: 0.8759
+  Difference: -0.0174
+  Model A values: ['0.8335', '0.8715', '0.8714', '0.8721', '0.8438']
+  Model B values: ['0.8469', '0.8781', '0.8906', '0.8689', '0.8949']
+  t-test significance: p=0.131 
+  Wilcoxon significance: p=0.125 
+
+auroc_weighted_ovo:
+  Model A mean: 0.8507
+  Model B mean: 0.8666
+  Difference: -0.0160
+  Model A values: ['0.8273', '0.8632', '0.8637', '0.8599', '0.8393']
+  Model B values: ['0.8315', '0.8771', '0.8830', '0.8553', '0.8863']
+  t-test significance: p=0.143 
+  Wilcoxon significance: p=0.188 
+
+auroc_weighted_ovr:
+  Model A mean: 0.8895
+  Model B mean: 0.8868
+  Difference: 0.0026
+  Model A values: ['0.8800', '0.8918', '0.8995', '0.8944', '0.8816']
+  Model B values: ['0.8389', '0.9163', '0.8946', '0.8803', '0.9040']
+  t-test significance: p=0.839 
+  Wilcoxon significance: p=1.000 
+
+balanced_accuracy:
+  Model A mean: 0.5008
+  Model B mean: 0.4845
+  Difference: 0.0164
+  Model A values: ['0.4375', '0.5521', '0.4953', '0.5262', '0.4931']
+  Model B values: ['0.4094', '0.5366', '0.5355', '0.4511', '0.4898']
+  t-test significance: p=0.430 
+  Wilcoxon significance: p=0.438 
+
+cohen_kappa:
+  Model A mean: 0.4646
+  Model B mean: 0.4660
+  Difference: -0.0014
+  Model A values: ['0.4385', '0.4761', '0.4800', '0.5005', '0.4278']
+  Model B values: ['0.3585', '0.6090', '0.4703', '0.4353', '0.4569']
+  t-test significance: p=0.972 
+  Wilcoxon significance: p=1.000 
+
+f1_weighted:
+  Model A mean: 0.7170
+  Model B mean: 0.7198
+  Difference: -0.0028
+  Model A values: ['0.7079', '0.7230', '0.7316', '0.7390', '0.6836']
+  Model B values: ['0.6694', '0.7965', '0.7168', '0.7039', '0.7123']
+  t-test significance: p=0.903 
+  Wilcoxon significance: p=1.000 
+
+================================================================================
+Significance levels: * p < 0.05, ** p < 0.01

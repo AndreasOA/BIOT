@@ -1,0 +1,60 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleardoubleoddpage
+\chapter{Discussion}
+\label{sec:discussion}
+
+This chapter interprets the experimental findings and situates them within the broader context of biosignal processing research. The discussion addresses four central questions: (1) how \ac{xLSTM} architectures behave within the \ac{BIOT} framework, (2) to what extent potential benefits depend on temporal context, (3) the statistical robustness and clinical implications of the observed effects, and (4) remaining methodological and practical limitations. Collectively, these considerations contribute to a realistic assessment of the opportunities and constraints associated with applying advanced recurrent neural architectures to \ac{EEG} event classification.
+
+\section{Performance Interpretation and Temporal Context}
+\label{sec:performance_analysis}
+
+The experimental results demonstrate that performance is primarily governed by temporal window configuration rather than architectural choice alone. No single model consistently dominates across all evaluated settings. Instead, each \ac{xLSTM} variant exhibits distinct operating regimes. The \ac{sLSTM} performs most favorably for short (5\,s) and long (9\,s) windows, whereas the \ac{mLSTM} achieves its strongest performance at intermediate (7\,s) windows. The Linear Transformer baseline remains competitive at 5\,s but shows degradation as sequence length increases.
+
+\subsection{Window-Dependent Benefits of xLSTM}
+\label{sec:temporal_modeling}
+
+These observations indicate that potential advantages of \ac{xLSTM} architectures~\cite{beck2024xlstm}, which extend the classical \ac{LSTM} memory mechanisms~\cite{hochreiter1997lstm}, are conditional rather than universal. At shorter windows, the Linear Transformer already captures task-relevant structure effectively. At intermediate durations, matrix-valued memory appears to offer benefits through its enhanced capacity to integrate moderately extended temporal dependencies. At longer windows, scalar-memory dynamics again become favorable, suggesting distinct adaptation behaviours in relation to temporal scale.
+
+The magnitude of these effects must be interpreted in the context of the \ac{BIOT} framework~\cite{yang2023biot}, which tokenizes \ac{EEG} into discrete frequency-domain representations. This results in comparatively short sequential structures, meaning clinically informative patterns may already be encoded within limited temporal horizons. Unlike domains such as natural language processing~\cite{vaswani2017attention,beck2024xlstm}, where dependencies span hundreds or thousands of tokens, the effective sequence complexity in \ac{EEG} is often more local. Consequently, highly expressive long-range memory mechanisms offer only incremental, rather than transformative, benefits. Additionally, inter-run variability remains non-negligible, indicating that part of the visible window-dependent behaviour arises from stochastic training dynamics.
+
+In summary, \ac{xLSTM} architectures can outperform a Linear Transformer under specific temporal configurations, but they do not provide universal benefits. Their effectiveness is strongly modulated by the temporal scales at which relevant neural activity patterns manifest.
+
+\section{Domain Transfer Limitations}
+\label{sec:domain_transfer}
+
+The window-dependent behaviour also reflects broader considerations regarding domain transfer. \ac{xLSTM} was introduced in the context of language modeling and other sequential domains where long-range structure is central~\cite{beck2024xlstm}. The original \ac{BIOT} work~\cite{yang2023biot} demonstrated that treating biosignals analogously to linguistic sequences is feasible, extending ideas also explored in vision~\cite{dosovitskiy2021vit} and audio~\cite{gong2021ast}. However, \ac{EEG} differs fundamentally from language: signals exhibit oscillatory patterns, transient dynamics, and strong correlations between channels rather than semantic token dependencies.
+
+Moreover, the \ac{TUEV} dataset used in this work~\cite{harati2015improved,obeid2016temple,ferrell2022electrode} is characterized by highly imbalanced event distributions and heterogeneous signal quality. In such settings, architectural expressiveness alone is insufficient; data properties and representation choices play an equally substantial role. These findings therefore reinforce the need for domain-specific adaptation rather than direct transplantation of architectures developed primarily for linguistic tasks.
+
+\section{Statistical Robustness and Practical Implications}
+\label{sec:critical_assessment}
+
+\subsection{Statistical Confidence}
+\label{sec:statistical_significance}
+
+The statistical analysis confirms that most observed advantages do not reach significance within the experimental protocol. Although isolated performance gains exist, balanced accuracy, the primary evaluation metric, does not show statistically meaningful improvements at any window length. Together with inter-run variability, this suggests that architectural differences explain only a modest portion of observed performance variability, whereas factors such as dataset characteristics and training dynamics play a dominant role. This interpretation aligns with broader findings in \ac{EEG} literature demonstrating the impact of noise, variability, and recording conditions on model performance~\cite{banville2022robust}.
+
+\subsection{Clinical Relevance}
+\label{sec:class_imbalance}
+
+From a clinical perspective, class imbalance represents the most critical limitation. Although certain \ac{xLSTM} configurations improve recall for selected classes, particularly at longer windows, minority classes retain low sensitivity. This reflects well-documented challenges in imbalanced learning~\cite{cui2019class,lin2017focal} and aligns with known structural skew in \ac{EEG} event corpora~\cite{obeid2016temple}. Without explicit imbalance mitigation strategies, architectural changes alone are insufficient to achieve clinically acceptable reliability.
+
+These results therefore highlight that meaningful clinical advancement will require a combination of improved learning strategies, representation refinement, and stabilization of training dynamics, rather than architecture substitution alone.
+
+\section{Study Limitations}
+\label{sec:limitations}
+
+Several limitations restrict the generality of the conclusions. The number of training runs per configuration (five seeds) limits statistical power, especially given the observed variance. Evaluation on a single, highly imbalanced dataset~\cite{harati2015improved,obeid2016temple} constrains generalisation potential. Furthermore, hyperparameters were tuned on the Linear Transformer baseline rather than individually optimized for each \ac{xLSTM} variant. Finally, only three window lengths were explored, despite results clearly indicating window-sensitive behaviour.
+
+\section{Broader Implications and Future Work}
+\label{sec:implications}
+
+Despite these limitations, the results yield several important insights. They demonstrate that \ac{xLSTM} architectures provide measurable, context-dependent benefits within the \ac{BIOT} framework~\cite{yang2023biot}, clarify that temporal configuration is a primary driver of performance, and reinforce that computational efficiency and training stability remain essential considerations. However, the observed computational costs must be interpreted cautiously: the original \ac{xLSTM} paper~\cite{beck2024xlstm} emphasizes that \ac{mLSTM} is ``fully parallelizable'' and designed for favorable scaling. The substantially slower runtime observed here likely reflects implementation limitations in the \texttt{xlstm} Python package (\url{https://github.com/NX-AI/xlstm/issues/58}) rather than fundamental architectural constraints, suggesting that optimized implementations could significantly improve efficiency.
+
+Future work should therefore prioritise three directions. First, principled imbalance mitigation strategies such as class-balanced loss~\cite{cui2019class}, focal loss~\cite{lin2017focal} or synthetic oversampling~\cite{chawla2002smote,he2008adasyn}. Second, exploration of richer or alternative tokenization and representation schemes that may preserve longer-range dependencies. Third, larger-scale, multi-dataset studies with enhanced statistical power to assess whether observed effects generalise across clinical and technical conditions.
+
+\section{Summary}
+\label{sec:discussion_summary}
+
+In summary, integrating \ac{xLSTM} architectures into \ac{BIOT} yields nuanced rather than universal gains. Improvements are real but strongly dependent on temporal configuration, statistically limited under current conditions, and insufficient alone to overcome the dominant influence of class imbalance. These findings demonstrate that successful \ac{EEG} event classification requires coordinated progress in representation learning, model design, and methodological robustness. At the same time, they provide a realistic, empirically grounded assessment of when advanced memory architectures contribute value in biosignal processing and where their benefits remain constrained.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

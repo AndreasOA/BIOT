@@ -84,11 +84,13 @@ class PTBLoader(torch.utils.data.Dataset):
 
 
 class TUEVLoader(torch.utils.data.Dataset):
-    def __init__(self, root, files, sampling_rate=200):
+    def __init__(self, root, files, sampling_rate=200, secondsBefore=2, secondsAfter=2):
         self.root = root
         self.files = files
         self.default_rate = 250
         self.sampling_rate = sampling_rate
+        self.secondsBefore = secondsBefore
+        self.secondsAfter = secondsAfter
 
     def __len__(self):
         return len(self.files)
@@ -96,9 +98,9 @@ class TUEVLoader(torch.utils.data.Dataset):
     def __getitem__(self, index):
         sample = pickle.load(open(os.path.join(self.root, self.files[index]), "rb"))
         X = sample["signal"]
-        # 256 * 5 -> 1000, from 256Hz to ?
+        # If sampling rate is 200Hz than 200Hz * seonds_of_sample = 1000 items resampled from 250 * seonds_of_sample = 1250 items
         if self.sampling_rate != self.default_rate:
-            X = resample(X, 5 * self.sampling_rate, axis=-1)
+            X = resample(X, (self.secondsBefore + self.secondsAfter + 1) * self.sampling_rate, axis=-1)
         X = X / (
             np.quantile(np.abs(X), q=0.95, method="linear", axis=-1, keepdims=True)
             + 1e-8

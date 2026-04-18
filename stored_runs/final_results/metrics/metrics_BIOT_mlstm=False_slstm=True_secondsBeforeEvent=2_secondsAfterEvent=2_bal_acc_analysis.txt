@@ -1,0 +1,93 @@
+METRICS ANALYSIS RESULTS
+Metrics Type: bal_acc
+==================================================
+
+OVERALL STATISTICS ACROSS 5 RUNS
+--------------------------------------------------
+Metric                    Mean         Std          CV (%)    
+----------------------------------------------------------------------
+accuracy                  0.7108       0.0250       3.51      
+balanced_accuracy         0.5215       0.0137       2.63      
+cohen_kappa               0.4707       0.0442       9.39      
+f1_weighted               0.7197       0.0267       3.71      
+auroc_macro_ovr           0.8708       0.0085       0.98      
+auroc_weighted_ovr        0.8774       0.0158       1.80      
+auroc_macro_ovo           0.8293       0.0094       1.14      
+auroc_weighted_ovo        0.8641       0.0077       0.89      
+aucpr_macro               0.5127       0.0158       3.08      
+aucpr_micro               0.7739       0.0326       4.21      
+
+======================================================================
+
+INDIVIDUAL RUN VALUES:
+----------------------------------------------------------------------
+
+accuracy:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.6915
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.7501
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.6873
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.7157
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.7095
+
+balanced_accuracy:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.5277
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.5173
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.4993
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.5328
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.5302
+
+cohen_kappa:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.4463
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.5346
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.4173
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.4872
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.4682
+
+f1_weighted:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.7106
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.7551
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.6836
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.7338
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.7153
+
+auroc_macro_ovr:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.8646
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.8834
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.8676
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.8756
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.8630
+
+auroc_weighted_ovr:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.8706
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.8993
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.8605
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.8881
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.8687
+
+auroc_macro_ovo:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.8252
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.8372
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.8169
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.8401
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.8271
+
+auroc_weighted_ovo:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.8605
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.8748
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.8572
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.8697
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.8584
+
+aucpr_macro:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.5162
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.5322
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.5031
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.4915
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.5205
+
+aucpr_micro:
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=10_20251001_190611: 0.7502
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=123_20251001_060842: 0.8255
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=42_20251001_020924: 0.7427
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=456_20251001_102236: 0.7709
+  BIOT_mlstm=False_slstm=True_secondsBeforeEvent=2_secondsAfterEvent=2_seed=999_20251001_144330: 0.7802
